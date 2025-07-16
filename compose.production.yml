@@ -26,8 +26,27 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=mysql://root:password@mysql:3306/wagashi_simulator
+      - NEXTAUTH_SECRET=your-secret-key-here-change-this-in-production
+      - NEXTAUTH_URL=http://localhost:3000
     volumes:
       - ./:/app
-    command: pnpm start
+      - ./public/uploads:/app/public/uploads
+    command: pnpm db:generate && pnpm start
     stdin_open: true
     tty: true
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=wagashi_simulator
+      - MYSQL_USER=wagashi_user
+      - MYSQL_PASSWORD=wagashi_password
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
