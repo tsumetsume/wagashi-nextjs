@@ -1705,7 +1705,7 @@ export default function BoxArea({
                     onClick={() => handleShowImageViewer(infoModalItem)}
                   >
                     <img
-                      src={infoModalItem.imageUrl || "/placeholder.svg"}
+                      src={getEnlargedImageUrl(infoModalItem.itemId) || infoModalItem.imageUrl || "/placeholder.svg"}
                       alt={infoModalItem.name}
                       className="w-full h-full"
                       style={{ objectFit: "contain" }}
@@ -1854,7 +1854,7 @@ export default function BoxArea({
       {/* 画像拡大表示モーダル */}
       {imageViewerItem && (
         <ImageViewerModal
-          imageUrl={imageViewerItem.imageUrl}
+          imageUrl={getEnlargedImageUrl(imageViewerItem.itemId) || imageViewerItem.imageUrl}
           altText={imageViewerItem.name}
           onClose={() => setImageViewerItem(null)}
         />
@@ -1917,5 +1917,11 @@ export default function BoxArea({
   function getStorageMethod(itemId: string): string {
     const sweet = sweets.find((s) => s.id === itemId)
     return sweet?.storageMethod || "保存方法情報はありません。"
+  }
+
+  // 拡大用画像URLを取得する関数
+  function getEnlargedImageUrl(itemId: string): string | null {
+    const sweet = sweets.find((s) => s.id === itemId)
+    return sweet?.enlargedImagePath || null
   }
 }

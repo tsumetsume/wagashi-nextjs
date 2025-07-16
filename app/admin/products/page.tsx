@@ -28,6 +28,7 @@ interface Product {
   size: string
   beforeImagePath?: string
   afterImagePath?: string
+  enlargedImagePath?: string
   ingredients?: string
   nutritionInfo?: string
   shelfLife?: string
@@ -65,6 +66,7 @@ export default function ProductsPage() {
     size: '',
     beforeImagePath: '',
     afterImagePath: '',
+    enlargedImagePath: '',
     ingredients: '',
     nutritionInfo: '',
     shelfLife: '',
@@ -103,7 +105,7 @@ export default function ProductsPage() {
     }
   }
 
-  const handleImageUpload = async (file: File, type: 'before' | 'after') => {
+  const handleImageUpload = async (file: File, type: 'before' | 'after' | 'enlarged') => {
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -191,6 +193,7 @@ export default function ProductsPage() {
       size: product.size,
       beforeImagePath: product.beforeImagePath || '',
       afterImagePath: product.afterImagePath || '',
+      enlargedImagePath: product.enlargedImagePath || '',
       ingredients: product.ingredients || '',
       nutritionInfo: product.nutritionInfo || '',
       shelfLife: product.shelfLife || '',
@@ -213,6 +216,7 @@ export default function ProductsPage() {
       size: '',
       beforeImagePath: '',
       afterImagePath: '',
+      enlargedImagePath: '',
       ingredients: '',
       nutritionInfo: '',
       shelfLife: '',
@@ -635,6 +639,55 @@ export default function ProductsPage() {
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, afterImagePath: '' })}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>拡大用画像</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      value={formData.enlargedImagePath}
+                      onChange={(e) => setFormData({ ...formData, enlargedImagePath: e.target.value })}
+                      placeholder="画像URL"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleImageUpload(file, 'enlarged')
+                      }}
+                      className="hidden"
+                      id="enlarged-image-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('enlarged-image-upload')?.click()}
+                    >
+                      <Upload className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {/* 拡大用画像プレビュー */}
+                  {formData.enlargedImagePath && (
+                    <div className="mt-2">
+                      <div className="relative inline-block">
+                        <img
+                          src={formData.enlargedImagePath}
+                          alt="拡大用画像プレビュー"
+                          className="w-32 h-32 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, enlargedImagePath: '' })}
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
                         >
                           <X className="h-3 w-3" />

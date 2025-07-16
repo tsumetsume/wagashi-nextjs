@@ -33,6 +33,7 @@ export async function GET() {
         price: product.price,
         imageUrl: product.beforeImagePath || "/placeholder.svg",
         placedImageUrl: product.afterImagePath || product.beforeImagePath || "/placeholder.svg",
+        enlargedImagePath: product.enlargedImagePath || undefined,
         allergies,
         calories: product.calories || undefined,
         description: product.description || undefined,

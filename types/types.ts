@@ -22,6 +22,7 @@ export interface SweetItem {
   price: number
   imageUrl: string
   placedImageUrl: string
+  enlargedImagePath?: string
   allergies?: string[] // Add allergies field
   calories?: number // Add calories field
   description?: string // Add description field
