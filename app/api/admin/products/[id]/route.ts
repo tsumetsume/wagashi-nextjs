@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma'
 // 商品更新
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession()
     if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
@@ -66,7 +67,7 @@ export async function PUT(
     }
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         price: parseInt(price),
@@ -96,9 +97,10 @@ export async function PUT(
 // 商品削除
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession()
     if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
@@ -106,7 +108,7 @@ export async function DELETE(
 
     // 在庫レコードも削除（CASCADE設定により自動削除される）
     await prisma.product.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: '商品を削除しました' })
