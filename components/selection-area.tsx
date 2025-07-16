@@ -27,8 +27,28 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(false)
 
-  // カテゴリーの配列
-  const categories = ["焼き菓子", "餅菓子", "水菓子", "干菓子", "蒸し菓子", "季節限定", "伝統菓子", "仕切り"]
+  // カテゴリーの配列（動的に生成）
+  const getCategories = () => {
+    const sweetCategories = [...new Set(sweets.map(sweet => sweet.category))]
+    const dividerCategories = ["仕切り"]
+    const allCategories = [...sweetCategories, ...dividerCategories]
+    console.log("生成されたカテゴリー:", allCategories)
+    console.log("商品のカテゴリー一覧:", sweetCategories)
+    return allCategories
+  }
+
+  // 初期カテゴリー（データ読み込み前用）
+  const initialCategories = ["焼き菓子", "餅菓子", "水菓子", "干菓子", "蒸し菓子", "季節限定", "伝統菓子", "和菓子", "洋菓子", "仕切り"]
+  
+  const categories = sweets.length > 0 ? getCategories() : initialCategories
+
+  // アクティブタブが存在しないカテゴリーになった場合の処理
+  useEffect(() => {
+    if (sweets.length > 0 && !categories.includes(activeTab)) {
+      const firstCategory = categories.find(cat => cat !== "仕切り") || categories[0]
+      setActiveTab(firstCategory)
+    }
+  }, [categories, activeTab, sweets.length])
 
   // APIからデータを取得
   const loadData = async () => {
@@ -38,17 +58,25 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
     try {
       const [sweetsData, dividersData] = await Promise.all([fetchSweets(), fetchDividers()])
 
+      console.log("APIから取得した商品データ:", sweetsData)
+      console.log("商品データの件数:", sweetsData.length)
+
       // 在庫データが提供されている場合は、それを使用
-      if (inventoryData) {
+      if (inventoryData && inventoryData.length > 0) {
+        console.log("在庫データを使用:", inventoryData)
         setSweets(inventoryData)
       } else {
+        console.log("APIデータを使用:", sweetsData)
         setSweets(sweetsData)
       }
 
       setDividers(dividersData)
     } catch (err) {
       console.error("Failed to load data:", err)
-      setError("データの読み込みに失敗しました。再読み込みしてください。")
+      setError("データベースからデータの読み込みに失敗しました。管理画面で商品を追加してください。")
+      // エラー時は空の配列を設定
+      setSweets([])
+      setDividers([])
     } finally {
       setIsLoading(false)
     }
@@ -122,15 +150,31 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
 
   const filteredSweets = sweets.filter((sweet) => sweet.category === activeTab)
 
+  console.log("現在のアクティブタブ:", activeTab)
+  console.log("フィルタリング前の商品数:", sweets.length)
+  console.log("フィルタリング後の商品数:", filteredSweets.length)
+  console.log("フィルタリングされた商品:", filteredSweets)
+
   // 在庫切れの和菓子の数を取得
   const outOfStockCount = filteredSweets.filter((sweet) => !sweet.inStock).length
   const totalCount = filteredSweets.length
 
   return (
     <div className="w-full md:w-80 bg-white p-4 rounded-sm shadow-md flex flex-col h-full border border-[var(--color-indigo-light)]">
-      <h2 className="text-xl font-medium mb-4 text-[var(--color-indigo)] tracking-wide flex items-center">
-        <span className="inline-block w-1 h-6 bg-[var(--color-indigo)] mr-2"></span>
-        和菓子選択
+      <h2 className="text-xl font-medium mb-4 text-[var(--color-indigo)] tracking-wide flex items-center justify-between">
+        <div className="flex items-center">
+          <span className="inline-block w-1 h-6 bg-[var(--color-indigo)] mr-2"></span>
+          和菓子選択
+        </div>
+        <Button
+          onClick={loadData}
+          size="sm"
+          variant="outline"
+          className="text-xs px-2 py-1 h-6"
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </h2>
 
       {isLoading ? (

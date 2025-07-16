@@ -3,9 +3,9 @@
 import type React from "react"
 
 // 既存のインポート
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useDrop } from "react-dnd"
-import type { BoxSize, PlacedItem, DragItem } from "@/types/types"
+import type { BoxSize, PlacedItem, DragItem, SweetItem } from "@/types/types"
 import PlacedItemComponent from "./placed-item"
 import ContextMenu from "./context-menu"
 import DividerResizeModal from "./divider-resize-modal"
@@ -15,9 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import type { InfoDisplaySettings } from "@/components/info-settings-modal"
 import PrintModal from "./print-modal"
 import ErrorModalComponent from "./error-modal"
-
-// 既存のインポート
-import { sweets } from "@/data/items"
+import { fetchSweets } from "@/services/api-service"
 
 // BoxAreaProps インターフェースに printRef を追加
 interface BoxAreaProps {
@@ -55,6 +53,9 @@ export default function BoxArea({
     y: 0,
     item: null,
   })
+
+  // sweetsデータを状態として管理
+  const [sweets, setSweets] = useState<SweetItem[]>([])
 
   // 印刷モーダル用の状態を追加
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
@@ -110,11 +111,62 @@ export default function BoxArea({
 
   const boxRef = useRef<HTMLDivElement>(null)
 
+  // sweetsデータを取得
+  useEffect(() => {
+    const loadSweets = async () => {
+      try {
+        const sweetsData = await fetchSweets()
+        setSweets(sweetsData)
+      } catch (error) {
+        console.error("Failed to load sweets:", error)
+        // エラー時は空の配列を設定
+        setSweets([])
+      }
+    }
+    loadSweets()
+  }, [])
+
   useEffect(() => {
     // 箱サイズの設定
     const [width, height] = boxSize.split("x").map(Number)
     setGridSize({ width, height })
   }, [boxSize])
+
+  // 削除された商品をチェックする関数
+  const checkDeletedItems = useCallback(async () => {
+    try {
+      const sweetsData = await fetchSweets()
+      setSweets(sweetsData)
+      
+      // 削除された商品が配置されているかチェック
+      const deletedItems = placedItems.filter(placedItem => {
+        if (placedItem.type === 'sweet') {
+          return !sweetsData.find(sweet => sweet.id === placedItem.itemId)
+        }
+        return false
+      })
+      
+      if (deletedItems.length > 0) {
+        // 削除された商品を配置済みアイテムから削除
+        setPlacedItems(prev => prev.filter(item => 
+          !deletedItems.some(deleted => deleted.id === item.id)
+        ))
+        
+        // エラーモーダルで削除された商品を通知
+        setErrorModal({
+          visible: true,
+          title: "商品が削除されました",
+          message: `${deletedItems.length}個の商品が管理画面で削除されたため、配置から削除されました。`
+        })
+      }
+    } catch (error) {
+      console.error("Failed to load sweets:", error)
+      // エラー時は空の配列を設定
+      setSweets([])
+    }
+  }, [placedItems, setPlacedItems])
+
+
 
   const [{ isOver, canDrop }, drop] = useDrop(
     () => ({
@@ -1746,6 +1798,54 @@ export default function BoxArea({
                   </p>
                 </div>
               )}
+
+              {/* 原材料情報 */}
+              {infoSettings.showIngredients && infoModalItem.type === "sweet" && (
+                <div className="mt-4 pt-4 border-t border-[var(--color-gray-light)]">
+                  <h4 className="font-medium text-[var(--color-indigo)] mb-2 border-l-2 border-[var(--color-indigo)] pl-2">
+                    原材料
+                  </h4>
+                  <p className="text-sm text-[var(--color-black)] whitespace-pre-line">
+                    {getIngredients(infoModalItem.itemId)}
+                  </p>
+                </div>
+              )}
+
+              {/* 栄養成分情報 */}
+              {infoSettings.showNutritionInfo && infoModalItem.type === "sweet" && (
+                <div className="mt-4 pt-4 border-t border-[var(--color-gray-light)]">
+                  <h4 className="font-medium text-[var(--color-indigo)] mb-2 border-l-2 border-[var(--color-indigo)] pl-2">
+                    栄養成分
+                  </h4>
+                  <p className="text-sm text-[var(--color-black)] whitespace-pre-line">
+                    {getNutritionInfo(infoModalItem.itemId)}
+                  </p>
+                </div>
+              )}
+
+              {/* 日持ち情報 */}
+              {infoSettings.showShelfLife && infoModalItem.type === "sweet" && (
+                <div className="mt-4 pt-4 border-t border-[var(--color-gray-light)]">
+                  <h4 className="font-medium text-[var(--color-indigo)] mb-2 border-l-2 border-[var(--color-indigo)] pl-2">
+                    日持ち
+                  </h4>
+                  <p className="text-sm text-[var(--color-black)] whitespace-pre-line">
+                    {getShelfLife(infoModalItem.itemId)}
+                  </p>
+                </div>
+              )}
+
+              {/* 保存方法情報 */}
+              {infoSettings.showStorageMethod && infoModalItem.type === "sweet" && (
+                <div className="mt-4 pt-4 border-t border-[var(--color-gray-light)]">
+                  <h4 className="font-medium text-[var(--color-indigo)] mb-2 border-l-2 border-[var(--color-indigo)] pl-2">
+                    保存方法
+                  </h4>
+                  <p className="text-sm text-[var(--color-black)] whitespace-pre-line">
+                    {getStorageMethod(infoModalItem.itemId)}
+                  </p>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -1793,5 +1893,29 @@ export default function BoxArea({
   function getDescription(itemId: string): string {
     const sweet = sweets.find((s) => s.id === itemId)
     return sweet?.description || "詳細情報はありません。"
+  }
+
+  // 原材料情報を取得する関数
+  function getIngredients(itemId: string): string {
+    const sweet = sweets.find((s) => s.id === itemId)
+    return sweet?.ingredients || "原材料情報はありません。"
+  }
+
+  // 栄養成分情報を取得する関数
+  function getNutritionInfo(itemId: string): string {
+    const sweet = sweets.find((s) => s.id === itemId)
+    return sweet?.nutritionInfo || "栄養成分情報はありません。"
+  }
+
+  // 日持ち情報を取得する関数
+  function getShelfLife(itemId: string): string {
+    const sweet = sweets.find((s) => s.id === itemId)
+    return sweet?.shelfLife || "日持ち情報はありません。"
+  }
+
+  // 保存方法情報を取得する関数
+  function getStorageMethod(itemId: string): string {
+    const sweet = sweets.find((s) => s.id === itemId)
+    return sweet?.storageMethod || "保存方法情報はありません。"
   }
 }

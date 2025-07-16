@@ -1,5 +1,4 @@
 import type { SweetItem, DividerItem } from "@/types/types"
-import { sweets as fallbackSweets, dividers as fallbackDividers } from "@/data/items"
 
 // APIのベースURL
 const API_BASE_URL = "/api"
@@ -9,14 +8,13 @@ export async function fetchSweets(): Promise<SweetItem[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/sweets`)
     if (!response.ok) {
-      console.warn(`API returned status: ${response.status}. Using fallback data.`)
-      return fallbackSweets
+      console.error(`API returned status: ${response.status}.`)
+      throw new Error(`API returned status: ${response.status}`)
     }
     return await response.json()
   } catch (error) {
-    console.warn("Failed to fetch sweets, using fallback data:", error)
-    // エラー時はデータファイルから直接読み込む
-    return fallbackSweets
+    console.error("Failed to fetch sweets:", error)
+    throw error
   }
 }
 
@@ -25,13 +23,12 @@ export async function fetchDividers(): Promise<DividerItem[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/dividers`)
     if (!response.ok) {
-      console.warn(`API returned status: ${response.status}. Using fallback data.`)
-      return fallbackDividers
+      console.error(`API returned status: ${response.status}.`)
+      throw new Error(`API returned status: ${response.status}`)
     }
     return await response.json()
   } catch (error) {
-    console.warn("Failed to fetch dividers, using fallback data:", error)
-    // エラー時はデータファイルから直接読み込む
-    return fallbackDividers
+    console.error("Failed to fetch dividers:", error)
+    throw error
   }
 }

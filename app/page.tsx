@@ -27,6 +27,11 @@ export default function WagashiSimulator() {
     showAllergies: true, // Add allergies option with default true
     showCalories: true, // Add calories option with default true
     showDescription: true, // Add description option with default true
+    // 管理画面で管理されている追加項目
+    showIngredients: false, // 原材料名（デフォルトは非表示）
+    showNutritionInfo: false, // 栄養成分表示（デフォルトは非表示）
+    showShelfLife: false, // 日持ち（デフォルトは非表示）
+    showStorageMethod: false, // 保存方法（デフォルトは非表示）
   })
 
   const handleSaveLayout = () => {

@@ -26,62 +26,38 @@ async function main() {
   }
 
   // カテゴリーの作成
-  const categories = []
-  try {
-    const wagashiCategory = await prisma.category.upsert({
-      where: { name: '和菓子' },
-      update: {},
-      create: {
-        name: '和菓子',
-        description: '伝統的な日本の和菓子'
-      }
-    })
-    categories.push(wagashiCategory)
-    console.log('✅ カテゴリーを作成しました: 和菓子')
-  } catch (error) {
-    console.log('ℹ️ カテゴリー「和菓子」は既に存在します')
-    const existingCategory = await prisma.category.findUnique({
-      where: { name: '和菓子' }
-    })
-    if (existingCategory) categories.push(existingCategory)
-  }
+  const categories: any[] = []
+  
+  // 和菓子のカテゴリーを追加
+  const categoryNames = [
+    '焼き菓子',
+    '餅菓子', 
+    '水菓子',
+    '干菓子',
+    '蒸し菓子',
+    '季節限定',
+    '伝統菓子'
+  ]
 
-  try {
-    const yougashiCategory = await prisma.category.upsert({
-      where: { name: '洋菓子' },
-      update: {},
-      create: {
-        name: '洋菓子',
-        description: '西洋風のケーキやクッキー'
-      }
-    })
-    categories.push(yougashiCategory)
-    console.log('✅ カテゴリーを作成しました: 洋菓子')
-  } catch (error) {
-    console.log('ℹ️ カテゴリー「洋菓子」は既に存在します')
-    const existingCategory = await prisma.category.findUnique({
-      where: { name: '洋菓子' }
-    })
-    if (existingCategory) categories.push(existingCategory)
-  }
-
-  try {
-    const seasonalCategory = await prisma.category.upsert({
-      where: { name: '季節限定' },
-      update: {},
-      create: {
-        name: '季節限定',
-        description: '季節に応じた特別な商品'
-      }
-    })
-    categories.push(seasonalCategory)
-    console.log('✅ カテゴリーを作成しました: 季節限定')
-  } catch (error) {
-    console.log('ℹ️ カテゴリー「季節限定」は既に存在します')
-    const existingCategory = await prisma.category.findUnique({
-      where: { name: '季節限定' }
-    })
-    if (existingCategory) categories.push(existingCategory)
+  for (const categoryName of categoryNames) {
+    try {
+      const category = await prisma.category.upsert({
+        where: { name: categoryName },
+        update: {},
+        create: {
+          name: categoryName,
+          description: `${categoryName}の和菓子`
+        }
+      })
+      categories.push(category)
+      console.log(`✅ カテゴリーを作成しました: ${categoryName}`)
+    } catch (error) {
+      console.log(`ℹ️ カテゴリー「${categoryName}」は既に存在します`)
+      const existingCategory = await prisma.category.findUnique({
+        where: { name: categoryName }
+      })
+      if (existingCategory) categories.push(existingCategory)
+    }
   }
 
   if (categories.length === 0) {
@@ -92,124 +68,202 @@ async function main() {
   // 商品の作成
   const products = []
   
-  try {
-    const matchaDaifuku = await prisma.product.create({
-      data: {
-        name: '抹茶大福',
-        price: 280,
-        categoryId: categories[0].id,
-        description: '抹茶餡と白餡の二層構造の大福',
-        allergyInfo: '小麦、卵',
-        calories: 180,
-        size: '2x2',
-        beforeImagePath: '/images/wagashi/daifuku_1.png',
-        afterImagePath: '/images/wagashi/daifuku_2.png',
-        ingredients: '白玉粉、砂糖、抹茶、白餡、食紅',
-        nutritionInfo: 'エネルギー: 180kcal、たんぱく質: 3g、脂質: 2g、炭水化物: 35g',
-        shelfLife: '製造日から2日間',
-        storageMethod: '冷蔵保存'
-      }
-    })
-    products.push(matchaDaifuku)
-    console.log('✅ 商品を作成しました: 抹茶大福')
-  } catch (error) {
-    console.log('ℹ️ 商品「抹茶大福」は既に存在します')
+  // カテゴリーIDを取得する関数
+  const getCategoryId = (categoryName: string) => {
+    const category = categories.find(c => c.name === categoryName)
+    return category?.id || categories[0]?.id
   }
 
-  try {
-    const sakuraMochi = await prisma.product.create({
-      data: {
-        name: '桜もち',
-        price: 320,
-        categoryId: categories[0].id,
-        description: '桜の葉で包まれた春の和菓子',
-        allergyInfo: '小麦',
-        calories: 220,
-        size: '2x3',
-        beforeImagePath: '/images/wagashi/sakuramochi_1.png',
-        afterImagePath: '/images/wagashi/sakuramochi_2.png',
-        ingredients: '白玉粉、砂糖、小豆餡、桜の葉、食紅',
-        nutritionInfo: 'エネルギー: 220kcal、たんぱく質: 4g、脂質: 3g、炭水化物: 42g',
-        shelfLife: '製造日から3日間',
-        storageMethod: '冷蔵保存'
-      }
-    })
-    products.push(sakuraMochi)
-    console.log('✅ 商品を作成しました: 桜もち')
-  } catch (error) {
-    console.log('ℹ️ 商品「桜もち」は既に存在します')
-  }
+  // 商品データの定義
+  const productData = [
+    {
+      name: '栗饅頭',
+      category: '焼き菓子',
+      price: 250,
+      size: '2x2',
+      description: '栗の風味豊かな饅頭です。厳選された栗を使用し、上品な甘さに仕上げました。お茶と一緒にお楽しみください。',
+      allergyInfo: '小麦,卵',
+      calories: 220,
+      beforeImagePath: '/images/wagashi/kurimannjuu_1.png',
+      afterImagePath: '/images/wagashi/kurimannjuu_2.png',
+      ingredients: '小麦粉、砂糖、栗餡、卵、ベーキングパウダー',
+      nutritionInfo: 'エネルギー: 220kcal、たんぱく質: 4g、脂質: 6g、炭水化物: 42g',
+      shelfLife: '製造日から5日間',
+      storageMethod: '常温保存'
+    },
+    {
+      name: '最中',
+      category: '焼き菓子',
+      price: 180,
+      size: '2x1',
+      description: 'サクサクとした最中皮の中に、なめらかな餡がたっぷり入っています。伝統的な製法で作られた逸品です。',
+      allergyInfo: '小麦',
+      calories: 180,
+      beforeImagePath: '/images/wagashi/monaka_1.png',
+      afterImagePath: '/images/wagashi/monaka_2.png',
+      ingredients: '小麦粉、砂糖、小豆餡、食塩',
+      nutritionInfo: 'エネルギー: 180kcal、たんぱく質: 3g、脂質: 2g、炭水化物: 38g',
+      shelfLife: '製造日から30日間',
+      storageMethod: '常温保存'
+    },
+    {
+      name: 'どら焼き',
+      category: '焼き菓子',
+      price: 200,
+      size: '2x2',
+      description: 'ふんわりとした生地で包まれた粒あんが絶妙な味わいのどら焼きです。朝夕のおやつにぴったりです。',
+      allergyInfo: '小麦,卵',
+      calories: 210,
+      beforeImagePath: '/images/wagashi/dorayaki_1.png',
+      afterImagePath: '/images/wagashi/dorayaki_2.png',
+      ingredients: '小麦粉、砂糖、卵、牛乳、小豆餡、ベーキングパウダー',
+      nutritionInfo: 'エネルギー: 210kcal、たんぱく質: 6g、脂質: 5g、炭水化物: 40g',
+      shelfLife: '製造日から3日間',
+      storageMethod: '常温保存'
+    },
+    {
+      name: '大福',
+      category: '餅菓子',
+      price: 220,
+      size: '2x2',
+      description: 'もちもちとした食感の大福です。上質な餡を使用し、職人が一つ一つ丁寧に仕上げています。',
+      allergyInfo: '大豆',
+      calories: 230,
+      beforeImagePath: '/images/wagashi/daifuku_1.png',
+      afterImagePath: '/images/wagashi/daifuku_2.png',
+      ingredients: '白玉粉、砂糖、小豆餡、食紅',
+      nutritionInfo: 'エネルギー: 230kcal、たんぱく質: 4g、脂質: 2g、炭水化物: 48g',
+      shelfLife: '製造日から2日間',
+      storageMethod: '冷蔵保存'
+    },
+    {
+      name: '桜餅',
+      category: '餅菓子',
+      price: 200,
+      size: '2x1',
+      description: '桜の葉の塩漬けで包んだ風味豊かな桜餅です。春の訪れを感じる季節限定の和菓子です。',
+      allergyInfo: '小麦,大豆',
+      calories: 180,
+      beforeImagePath: '/images/wagashi/sakuramochi_1.png',
+      afterImagePath: '/images/wagashi/sakuramochi_2.png',
+      ingredients: '白玉粉、砂糖、小豆餡、桜の葉、食紅',
+      nutritionInfo: 'エネルギー: 180kcal、たんぱく質: 3g、脂質: 2g、炭水化物: 38g',
+      shelfLife: '製造日から3日間',
+      storageMethod: '冷蔵保存'
+    },
+    {
+      name: '羊羹',
+      category: '水菓子',
+      price: 300,
+      size: '4x1',
+      description: 'なめらかな舌触りの羊羹です。厳選された小豆を使用し、上品な甘さに仕上げました。薄く切ってお茶と一緒にどうぞ。',
+      allergyInfo: '大豆',
+      calories: 260,
+      beforeImagePath: '/images/wagashi/youkan_1.png',
+      afterImagePath: '/images/wagashi/youkan_2.png',
+      ingredients: '小豆、砂糖、寒天、食塩',
+      nutritionInfo: 'エネルギー: 260kcal、たんぱく質: 5g、脂質: 1g、炭水化物: 58g',
+      shelfLife: '製造日から7日間',
+      storageMethod: '常温保存'
+    },
+    {
+      name: 'カステラ',
+      category: '焼き菓子',
+      price: 450,
+      size: '5x2',
+      description: 'ふわふわとした食感のカステラです。卵の風味が豊かで、上品な甘さに仕上げました。',
+      allergyInfo: '小麦,卵',
+      calories: 280,
+      beforeImagePath: '/images/wagashi/kasutera_1.png',
+      afterImagePath: '/images/wagashi/kasutera_2.png',
+      ingredients: '小麦粉、砂糖、卵、蜂蜜、バニラエッセンス',
+      nutritionInfo: 'エネルギー: 280kcal、たんぱく質: 8g、脂質: 12g、炭水化物: 45g',
+      shelfLife: '製造日から7日間',
+      storageMethod: '常温保存'
+    },
+    {
+      name: 'いちご大福',
+      category: '餅菓子',
+      price: 250,
+      size: '2x2',
+      description: 'いちごと白餡を包んだ春の大福です。いちごの酸味と餡の甘さが絶妙なバランスです。',
+      allergyInfo: '大豆',
+      calories: 240,
+      beforeImagePath: '/ichigo-daifuku.png',
+      afterImagePath: '/ichigo-daifuku.png',
+      ingredients: '白玉粉、砂糖、白餡、いちご、食紅',
+      nutritionInfo: 'エネルギー: 240kcal、たんぱく質: 4g、脂質: 2g、炭水化物: 50g',
+      shelfLife: '製造日から1日間',
+      storageMethod: '冷蔵保存'
+    },
+    {
+      name: 'みたらし団子',
+      category: '餅菓子',
+      price: 220,
+      size: '1x3',
+      description: '醤油ベースの甘辛いタレをかけた団子です。香ばしい香りと絶妙な味わいが特徴です。',
+      allergyInfo: '小麦,大豆',
+      calories: 200,
+      beforeImagePath: '/images/wagashi/mitarashi-dango_1.png',
+      afterImagePath: '/images/wagashi/mitarashi-dango_2.png',
+      ingredients: '白玉粉、砂糖、醤油、みりん、片栗粉',
+      nutritionInfo: 'エネルギー: 200kcal、たんぱく質: 4g、脂質: 1g、炭水化物: 44g',
+      shelfLife: '製造日から2日間',
+      storageMethod: '冷蔵保存'
+    },
+    {
+      name: 'あんみつ',
+      category: '水菓子',
+      price: 380,
+      size: '3x3',
+      description: '寒天、小豆餡、フルーツを盛り合わせた涼やかな和菓子です。夏にぴったりの一品です。',
+      allergyInfo: '大豆',
+      calories: 320,
+      beforeImagePath: '/anmitsu.png',
+      afterImagePath: '/anmitsu.png',
+      ingredients: '寒天、小豆餡、フルーツ、黒蜜、白玉',
+      nutritionInfo: 'エネルギー: 320kcal、たんぱく質: 6g、脂質: 2g、炭水化物: 68g',
+      shelfLife: '製造日から1日間',
+      storageMethod: '冷蔵保存'
+    }
+  ]
 
-  try {
-    const dorayaki = await prisma.product.create({
-      data: {
-        name: 'どら焼き',
-        price: 250,
-        categoryId: categories[0].id,
-        description: '小豆餡を挟んだ焼き菓子',
-        allergyInfo: '小麦、卵',
-        calories: 200,
-        size: '3x3',
-        beforeImagePath: '/images/wagashi/dorayaki_1.png',
-        afterImagePath: '/images/wagashi/dorayaki_2.png',
-        ingredients: '小麦粉、砂糖、卵、牛乳、小豆餡、ベーキングパウダー',
-        nutritionInfo: 'エネルギー: 200kcal、たんぱく質: 6g、脂質: 5g、炭水化物: 38g',
-        shelfLife: '製造日から5日間',
-        storageMethod: '常温保存'
+  // 商品を作成
+  for (const product of productData) {
+    try {
+      // 既存の商品をチェック
+      const existingProduct = await prisma.product.findFirst({
+        where: { name: product.name }
+      })
+      
+      if (existingProduct) {
+        console.log(`ℹ️ 商品「${product.name}」は既に存在します`)
+        products.push(existingProduct)
+        continue
       }
-    })
-    products.push(dorayaki)
-    console.log('✅ 商品を作成しました: どら焼き')
-  } catch (error) {
-    console.log('ℹ️ 商品「どら焼き」は既に存在します')
-  }
 
-  try {
-    const castella = await prisma.product.create({
-      data: {
-        name: 'カステラ',
-        price: 450,
-        categoryId: categories[1].id,
-        description: 'ふわふわのスポンジケーキ',
-        allergyInfo: '小麦、卵、牛乳',
-        calories: 280,
-        size: '3x4',
-        beforeImagePath: '/images/wagashi/kasutera_1.png',
-        afterImagePath: '/images/wagashi/kasutera_2.png',
-        ingredients: '小麦粉、砂糖、卵、牛乳、蜂蜜、バニラエッセンス',
-        nutritionInfo: 'エネルギー: 280kcal、たんぱく質: 8g、脂質: 12g、炭水化物: 45g',
-        shelfLife: '製造日から7日間',
-        storageMethod: '常温保存'
-      }
-    })
-    products.push(castella)
-    console.log('✅ 商品を作成しました: カステラ')
-  } catch (error) {
-    console.log('ℹ️ 商品「カステラ」は既に存在します')
-  }
-
-  try {
-    const kurimanju = await prisma.product.create({
-      data: {
-        name: '栗まんじゅう',
-        price: 380,
-        categoryId: categories[0].id,
-        description: '栗餡を包んだ蒸し菓子',
-        allergyInfo: '小麦',
-        calories: 240,
-        size: '2x2',
-        beforeImagePath: '/images/wagashi/kurimannjuu_1.png',
-        afterImagePath: '/images/wagashi/kurimannjuu_2.png',
-        ingredients: '小麦粉、砂糖、栗餡、ベーキングパウダー',
-        nutritionInfo: 'エネルギー: 240kcal、たんぱく質: 5g、脂質: 4g、炭水化物: 48g',
-        shelfLife: '製造日から4日間',
-        storageMethod: '冷蔵保存'
-      }
-    })
-    products.push(kurimanju)
-    console.log('✅ 商品を作成しました: 栗まんじゅう')
-  } catch (error) {
-    console.log('ℹ️ 商品「栗まんじゅう」は既に存在します')
+      const createdProduct = await prisma.product.create({
+        data: {
+          name: product.name,
+          price: product.price,
+          categoryId: getCategoryId(product.category),
+          description: product.description,
+          allergyInfo: product.allergyInfo,
+          calories: product.calories,
+          size: product.size,
+          beforeImagePath: product.beforeImagePath,
+          afterImagePath: product.afterImagePath,
+          ingredients: product.ingredients,
+          nutritionInfo: product.nutritionInfo,
+          shelfLife: product.shelfLife,
+          storageMethod: product.storageMethod
+        }
+      })
+      products.push(createdProduct)
+      console.log(`✅ 商品を作成しました: ${product.name}`)
+    } catch (error) {
+      console.log(`❌ 商品「${product.name}」の作成に失敗しました:`, error)
+    }
   }
 
   // 既存の商品を取得

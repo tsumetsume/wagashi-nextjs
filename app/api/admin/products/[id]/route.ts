@@ -88,6 +88,18 @@ export async function PUT(
       }
     })
 
+    // シミュレーション画面のキャッシュクリアを通知
+    try {
+      await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/sweets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } catch (error) {
+      console.error('Failed to notify cache clear:', error)
+    }
+
     return NextResponse.json(product)
   } catch (error) {
     return NextResponse.json({ error: '商品の更新に失敗しました' }, { status: 500 })
@@ -110,6 +122,18 @@ export async function DELETE(
     await prisma.product.delete({
       where: { id }
     })
+
+    // シミュレーション画面のキャッシュクリアを通知
+    try {
+      await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/sweets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } catch (error) {
+      console.error('Failed to notify cache clear:', error)
+    }
 
     return NextResponse.json({ message: '商品を削除しました' })
   } catch (error) {

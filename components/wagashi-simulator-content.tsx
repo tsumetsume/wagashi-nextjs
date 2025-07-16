@@ -7,14 +7,14 @@ import SelectionArea from "@/components/selection-area"
 import HelpModal from "@/components/help-modal"
 import InfoSettingsModal, { type InfoDisplaySettings } from "@/components/info-settings-modal"
 import InventorySettingsModal from "@/components/inventory-settings-modal"
+import ProductUpdateModal from "@/components/product-update-modal"
 import type { BoxSize, PlacedItem, SweetItem } from "@/types/types"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, Save, Upload, HelpCircle, Settings, Package } from "lucide-react"
 import TutorialOverlay from "@/components/tutorial-overlay"
 import TutorialButton from "@/components/tutorial-button"
 import { useTutorialTarget } from "@/hooks/use-tutorial-target"
-import { useState } from "react"
-import { sweets } from "@/data/items"
+import { useState, useEffect } from "react"
 
 interface WagashiSimulatorContentProps {
   boxSize: BoxSize
@@ -50,7 +50,10 @@ export default function WagashiSimulatorContent({
   // 在庫管理モーダルの状態
   const [isInventoryOpen, setIsInventoryOpen] = useState(false)
   // 在庫データの状態
-  const [inventoryData, setInventoryData] = useState<SweetItem[]>(sweets)
+  const [inventoryData, setInventoryData] = useState<SweetItem[]>([])
+  // 商品変更通知モーダルの状態
+  const [isProductUpdateModalOpen, setIsProductUpdateModalOpen] = useState(false)
+  const [productUpdateMessage, setProductUpdateMessage] = useState("商品情報が変更されました")
 
   // チュートリアルのターゲット要素の参照
   const selectionAreaRef = useTutorialTarget("select-sweet")
@@ -61,6 +64,21 @@ export default function WagashiSimulatorContent({
   const saveLoadRef = useTutorialTarget("save-load")
   const autoDividerRef = useTutorialTarget("auto-divider")
   const printRef = useTutorialTarget("print")
+
+  // 商品変更通知を受け取る
+  useEffect(() => {
+    const handleProductUpdate = (event: CustomEvent) => {
+      const message = event.detail?.message || "商品情報が変更されました"
+      setProductUpdateMessage(message)
+      setIsProductUpdateModalOpen(true)
+    }
+
+    window.addEventListener("productUpdate", handleProductUpdate as EventListener)
+
+    return () => {
+      window.removeEventListener("productUpdate", handleProductUpdate as EventListener)
+    }
+  }, [])
 
   // 在庫データを更新する関数
   const handleUpdateInventory = (updatedSweets: SweetItem[]) => {
@@ -73,6 +91,11 @@ export default function WagashiSimulatorContent({
     // 選択エリアを更新するためにイベントを発火
     const event = new CustomEvent("inventoryUpdated", { detail: updatedSweets })
     window.dispatchEvent(event)
+  }
+
+  // ページをリロードする関数
+  const handleReload = () => {
+    window.location.reload()
   }
 
   return (
@@ -185,6 +208,12 @@ export default function WagashiSimulatorContent({
       {isInventoryOpen && (
         <InventorySettingsModal onClose={() => setIsInventoryOpen(false)} onUpdateInventory={handleUpdateInventory} />
       )}
+      <ProductUpdateModal
+        isOpen={isProductUpdateModalOpen}
+        onClose={() => setIsProductUpdateModalOpen(false)}
+        onReload={handleReload}
+        message={productUpdateMessage}
+      />
       <TutorialOverlay />
     </div>
   )

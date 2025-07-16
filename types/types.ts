@@ -26,6 +26,11 @@ export interface SweetItem {
   calories?: number // Add calories field
   description?: string // Add description field
   inStock: boolean // 在庫状態を追加
+  // 管理画面で管理されている追加項目
+  ingredients?: string // 原材料名
+  nutritionInfo?: string // 栄養成分表示
+  shelfLife?: string // 日持ち
+  storageMethod?: string // 保存方法
 }
 
 // 仕切りアイテムの型

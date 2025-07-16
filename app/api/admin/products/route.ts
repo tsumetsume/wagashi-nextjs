@@ -114,6 +114,18 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // シミュレーション画面のキャッシュクリアを通知
+    try {
+      await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/sweets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } catch (error) {
+      console.error('Failed to notify cache clear:', error)
+    }
+
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: '商品の作成に失敗しました' }, { status: 500 })

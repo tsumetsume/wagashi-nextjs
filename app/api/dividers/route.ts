@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server"
 import { dividers } from "@/data/items"
+import type { DividerItem } from "@/types/types"
 
 export async function GET() {
   try {
-    // 実際のAPIサーバーからデータを取得する場合は、ここでfetchを使用します
-    // この例では、既存のダミーデータを返します
-
-    // APIレスポンスを遅延させてローディング状態をテストする（実際の実装では削除可）
-    await new Promise((resolve) => setTimeout(resolve, 800))
+    // 現在は静的なデータを使用
+    // 将来的にデータベースで管理する場合は、以下のような実装に変更可能
+    /*
+    const dividers = await prisma.divider.findMany({
+      where: {
+        isActive: true
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+    */
 
     return NextResponse.json(dividers)
   } catch (error) {

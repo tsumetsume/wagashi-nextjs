@@ -15,6 +15,11 @@ export interface InfoDisplaySettings {
   showAllergies: boolean // Add allergies option
   showCalories: boolean // Add calories option
   showDescription: boolean // Add description option
+  // 管理画面で管理されている追加項目
+  showIngredients: boolean // 原材料名
+  showNutritionInfo: boolean // 栄養成分表示
+  showShelfLife: boolean // 日持ち
+  showStorageMethod: boolean // 保存方法
 }
 
 interface InfoSettingsModalProps {
@@ -101,6 +106,38 @@ export default function InfoSettingsModal({ settings, onSave, onClose }: InfoSet
               onCheckedChange={(checked) => setLocalSettings({ ...localSettings, showDescription: !!checked })}
             />
             <Label htmlFor="showDescription">詳細説明</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="showIngredients"
+              checked={localSettings.showIngredients}
+              onCheckedChange={(checked) => setLocalSettings({ ...localSettings, showIngredients: !!checked })}
+            />
+            <Label htmlFor="showIngredients">原材料名</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="showNutritionInfo"
+              checked={localSettings.showNutritionInfo}
+              onCheckedChange={(checked) => setLocalSettings({ ...localSettings, showNutritionInfo: !!checked })}
+            />
+            <Label htmlFor="showNutritionInfo">栄養成分表示</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="showShelfLife"
+              checked={localSettings.showShelfLife}
+              onCheckedChange={(checked) => setLocalSettings({ ...localSettings, showShelfLife: !!checked })}
+            />
+            <Label htmlFor="showShelfLife">日持ち</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="showStorageMethod"
+              checked={localSettings.showStorageMethod}
+              onCheckedChange={(checked) => setLocalSettings({ ...localSettings, showStorageMethod: !!checked })}
+            />
+            <Label htmlFor="showStorageMethod">保存方法</Label>
           </div>
         </div>
         <DialogFooter>
