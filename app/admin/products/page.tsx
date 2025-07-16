@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit, Trash2, Upload, Search, Image as ImageIcon } from 'lucide-react'
+import { Plus, Edit, Trash2, Upload, Search, Image as ImageIcon, X } from 'lucide-react'
 
 interface Category {
   id: string
@@ -48,6 +48,13 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  
+  // 代表的なアレルギー項目
+  const allergyOptions = [
+    '小麦', '卵', '乳', '落花生', 'アーモンド', 'あわび', 'いか', 'いくら', 'オレンジ', 'カシューナッツ',
+    'キウイフルーツ', '牛肉', 'くるみ', 'ごま', 'さけ', 'さば', '大豆', '鶏肉', 'バナナ', '豚肉',
+    'まつたけ', 'もも', 'やまいも', 'りんご', 'ゼラチン', 'エビ', 'カニ'
+  ]
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -63,6 +70,9 @@ export default function ProductsPage() {
     shelfLife: '',
     storageMethod: ''
   })
+  
+  // 選択されたアレルギー項目を管理
+  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([])
 
   useEffect(() => {
     fetchData()
@@ -126,10 +136,16 @@ export default function ProductsPage() {
       
       const method = editingProduct ? 'PUT' : 'POST'
       
+      // 選択されたアレルギー項目を文字列に変換
+      const allergyInfoString = selectedAllergies.join(', ')
+      
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          allergyInfo: allergyInfoString
+        })
       })
 
       if (!response.ok) {
@@ -180,6 +196,9 @@ export default function ProductsPage() {
       shelfLife: product.shelfLife || '',
       storageMethod: product.storageMethod || ''
     })
+    // 既存のアレルギー情報を配列に変換
+    const existingAllergies = product.allergyInfo ? product.allergyInfo.split(',').map(item => item.trim()) : []
+    setSelectedAllergies(existingAllergies)
     setShowForm(true)
   }
 
@@ -199,6 +218,7 @@ export default function ProductsPage() {
       shelfLife: '',
       storageMethod: ''
     })
+    setSelectedAllergies([])
     setEditingProduct(null)
     setShowForm(false)
     setError('')
@@ -358,15 +378,6 @@ export default function ProductsPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="allergyInfo">アレルギー情報</Label>
-                  <Input
-                    id="allergyInfo"
-                    value={formData.allergyInfo}
-                    onChange={(e) => setFormData({ ...formData, allergyInfo: e.target.value })}
-                  />
-                </div>
-                
-                <div className="space-y-2">
                   <Label htmlFor="calories">カロリー (kcal)</Label>
                   <Input
                     id="calories"
@@ -374,6 +385,121 @@ export default function ProductsPage() {
                     value={formData.calories}
                     onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
                   />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>アレルギー情報</Label>
+                <div className="space-y-4">
+                  {/* 選択されたアレルギー項目の表示 */}
+                  {selectedAllergies.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAllergies.map((allergy) => (
+                        <Badge key={allergy} variant="secondary" className="flex items-center gap-1">
+                          {allergy}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedAllergies(prev => prev.filter(item => item !== allergy))}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* アレルギー項目の選択 */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {allergyOptions.map((allergy) => {
+                      const isSelected = selectedAllergies.includes(allergy)
+                      return (
+                        <button
+                          key={allergy}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedAllergies(prev => prev.filter(item => item !== allergy))
+                            } else {
+                              setSelectedAllergies(prev => [...prev, allergy])
+                            }
+                          }}
+                          style={{
+                            padding: '12px',
+                            fontSize: '14px',
+                            borderWidth: '2px',
+                            borderRadius: '8px',
+                            fontWeight: '500',
+                            position: 'relative',
+                            transition: 'all 0.2s',
+                            ...(isSelected ? {
+                              backgroundColor: '#dbeafe',
+                              borderColor: '#3b82f6',
+                              color: '#1e40af',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                            } : {
+                              backgroundColor: '#ffffff',
+                              borderColor: '#d1d5db',
+                              color: '#000000',
+                              cursor: 'pointer'
+                            })
+                          }}
+                          className={isSelected ? 'hover:bg-blue-200' : 'hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm'}
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            {isSelected && (
+                              <div 
+                                style={{
+                                  width: '16px',
+                                  height: '16px',
+                                  backgroundColor: '#3b82f6',
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <div 
+                                  style={{
+                                    width: '8px',
+                                    height: '8px',
+                                    backgroundColor: '#ffffff',
+                                    borderRadius: '50%'
+                                  }}
+                                ></div>
+                              </div>
+                            )}
+                            {allergy}
+                          </div>
+                          {isSelected && (
+                            <div 
+                              style={{
+                                position: 'absolute',
+                                top: '-4px',
+                                right: '-4px',
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: '#2563eb',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#ffffff',
+                                fontSize: '12px'
+                              }}
+                            >
+                              ✓
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  
+                  <p className="text-xs text-gray-500">
+                    該当するアレルギー項目をクリックして選択してください。選択した項目は上に表示され、×ボタンで削除できます。
+                  </p>
                 </div>
               </div>
               
