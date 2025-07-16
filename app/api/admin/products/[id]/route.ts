@@ -23,7 +23,11 @@ export async function PUT(
       calories,
       size,
       beforeImagePath,
-      afterImagePath
+      afterImagePath,
+      ingredients,
+      nutritionInfo,
+      shelfLife,
+      storageMethod
     } = body
 
     if (!name || !price || !categoryId || !size) {
@@ -72,7 +76,11 @@ export async function PUT(
         calories: calories ? parseInt(calories) : null,
         size,
         beforeImagePath,
-        afterImagePath
+        afterImagePath,
+        ingredients,
+        nutritionInfo,
+        shelfLife,
+        storageMethod
       },
       include: {
         category: true

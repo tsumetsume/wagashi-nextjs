@@ -45,6 +45,10 @@ model Product {
   size              String   // サイズ（2x2, 2x3, 3x3など）
   beforeImagePath   String?  // 配置前画像パス
   afterImagePath    String?  // 配置後画像パス
+  ingredients       String?  // 原材料名
+  nutritionInfo     String?  // 栄養成分表示
+  shelfLife         String?  // 日持ち
+  storageMethod     String?  // 保存方法
   isActive          Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

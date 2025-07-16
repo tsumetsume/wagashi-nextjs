@@ -103,7 +103,11 @@ async function main() {
         calories: 180,
         size: '2x2',
         beforeImagePath: '/images/wagashi/daifuku_1.png',
-        afterImagePath: '/images/wagashi/daifuku_2.png'
+        afterImagePath: '/images/wagashi/daifuku_2.png',
+        ingredients: '白玉粉、砂糖、抹茶、白餡、食紅',
+        nutritionInfo: 'エネルギー: 180kcal、たんぱく質: 3g、脂質: 2g、炭水化物: 35g',
+        shelfLife: '製造日から2日間',
+        storageMethod: '冷蔵保存'
       }
     })
     products.push(matchaDaifuku)
@@ -123,7 +127,11 @@ async function main() {
         calories: 220,
         size: '2x3',
         beforeImagePath: '/images/wagashi/sakuramochi_1.png',
-        afterImagePath: '/images/wagashi/sakuramochi_2.png'
+        afterImagePath: '/images/wagashi/sakuramochi_2.png',
+        ingredients: '白玉粉、砂糖、小豆餡、桜の葉、食紅',
+        nutritionInfo: 'エネルギー: 220kcal、たんぱく質: 4g、脂質: 3g、炭水化物: 42g',
+        shelfLife: '製造日から3日間',
+        storageMethod: '冷蔵保存'
       }
     })
     products.push(sakuraMochi)
@@ -143,7 +151,11 @@ async function main() {
         calories: 200,
         size: '3x3',
         beforeImagePath: '/images/wagashi/dorayaki_1.png',
-        afterImagePath: '/images/wagashi/dorayaki_2.png'
+        afterImagePath: '/images/wagashi/dorayaki_2.png',
+        ingredients: '小麦粉、砂糖、卵、牛乳、小豆餡、ベーキングパウダー',
+        nutritionInfo: 'エネルギー: 200kcal、たんぱく質: 6g、脂質: 5g、炭水化物: 38g',
+        shelfLife: '製造日から5日間',
+        storageMethod: '常温保存'
       }
     })
     products.push(dorayaki)
@@ -163,7 +175,11 @@ async function main() {
         calories: 280,
         size: '3x4',
         beforeImagePath: '/images/wagashi/kasutera_1.png',
-        afterImagePath: '/images/wagashi/kasutera_2.png'
+        afterImagePath: '/images/wagashi/kasutera_2.png',
+        ingredients: '小麦粉、砂糖、卵、牛乳、蜂蜜、バニラエッセンス',
+        nutritionInfo: 'エネルギー: 280kcal、たんぱく質: 8g、脂質: 12g、炭水化物: 45g',
+        shelfLife: '製造日から7日間',
+        storageMethod: '常温保存'
       }
     })
     products.push(castella)
@@ -183,7 +199,11 @@ async function main() {
         calories: 240,
         size: '2x2',
         beforeImagePath: '/images/wagashi/kurimannjuu_1.png',
-        afterImagePath: '/images/wagashi/kurimannjuu_2.png'
+        afterImagePath: '/images/wagashi/kurimannjuu_2.png',
+        ingredients: '小麦粉、砂糖、栗餡、ベーキングパウダー',
+        nutritionInfo: 'エネルギー: 240kcal、たんぱく質: 5g、脂質: 4g、炭水化物: 48g',
+        shelfLife: '製造日から4日間',
+        storageMethod: '冷蔵保存'
       }
     })
     products.push(kurimanju)

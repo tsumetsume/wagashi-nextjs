@@ -28,6 +28,10 @@ interface Product {
   size: string
   beforeImagePath?: string
   afterImagePath?: string
+  ingredients?: string
+  nutritionInfo?: string
+  shelfLife?: string
+  storageMethod?: string
   isActive: boolean
   category: Category
   stock?: {
@@ -53,7 +57,11 @@ export default function ProductsPage() {
     calories: '',
     size: '',
     beforeImagePath: '',
-    afterImagePath: ''
+    afterImagePath: '',
+    ingredients: '',
+    nutritionInfo: '',
+    shelfLife: '',
+    storageMethod: ''
   })
 
   useEffect(() => {
@@ -166,7 +174,11 @@ export default function ProductsPage() {
       calories: product.calories?.toString() || '',
       size: product.size,
       beforeImagePath: product.beforeImagePath || '',
-      afterImagePath: product.afterImagePath || ''
+      afterImagePath: product.afterImagePath || '',
+      ingredients: product.ingredients || '',
+      nutritionInfo: product.nutritionInfo || '',
+      shelfLife: product.shelfLife || '',
+      storageMethod: product.storageMethod || ''
     })
     setShowForm(true)
   }
@@ -181,7 +193,11 @@ export default function ProductsPage() {
       calories: '',
       size: '',
       beforeImagePath: '',
-      afterImagePath: ''
+      afterImagePath: '',
+      ingredients: '',
+      nutritionInfo: '',
+      shelfLife: '',
+      storageMethod: ''
     })
     setEditingProduct(null)
     setShowForm(false)
@@ -361,6 +377,50 @@ export default function ProductsPage() {
                 </div>
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="ingredients">原材料名</Label>
+                <Textarea
+                  id="ingredients"
+                  value={formData.ingredients}
+                  onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
+                  rows={2}
+                  placeholder="例: 小麦粉、砂糖、卵、牛乳..."
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="nutritionInfo">栄養成分表示</Label>
+                <Textarea
+                  id="nutritionInfo"
+                  value={formData.nutritionInfo}
+                  onChange={(e) => setFormData({ ...formData, nutritionInfo: e.target.value })}
+                  rows={3}
+                  placeholder="例: エネルギー: 200kcal、たんぱく質: 5g、脂質: 8g、炭水化物: 30g..."
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="shelfLife">日持ち</Label>
+                  <Input
+                    id="shelfLife"
+                    value={formData.shelfLife}
+                    onChange={(e) => setFormData({ ...formData, shelfLife: e.target.value })}
+                    placeholder="例: 製造日から3日間"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="storageMethod">保存方法</Label>
+                  <Input
+                    id="storageMethod"
+                    value={formData.storageMethod}
+                    onChange={(e) => setFormData({ ...formData, storageMethod: e.target.value })}
+                    placeholder="例: 冷蔵保存"
+                  />
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>配置前画像</Label>
@@ -492,6 +552,13 @@ export default function ProductsPage() {
                               <span>在庫: {product.stock.quantity}個</span>
                             )}
                           </div>
+                          {(product.ingredients || product.nutritionInfo || product.shelfLife || product.storageMethod) && (
+                            <div className="mt-2 text-xs text-gray-400">
+                              {product.ingredients && <div>原材料: {product.ingredients}</div>}
+                              {product.shelfLife && <div>日持ち: {product.shelfLife}</div>}
+                              {product.storageMethod && <div>保存方法: {product.storageMethod}</div>}
+                            </div>
+                          )}
                         </div>
                         
                         <div className="flex space-x-2">
@@ -567,6 +634,13 @@ export default function ProductsPage() {
                                 <span>在庫: {product.stock.quantity}個</span>
                               )}
                             </div>
+                            {(product.ingredients || product.nutritionInfo || product.shelfLife || product.storageMethod) && (
+                              <div className="mt-2 text-xs text-gray-400">
+                                {product.ingredients && <div>原材料: {product.ingredients}</div>}
+                                {product.shelfLife && <div>日持ち: {product.shelfLife}</div>}
+                                {product.storageMethod && <div>保存方法: {product.storageMethod}</div>}
+                              </div>
+                            )}
                           </div>
                           
                           <div className="flex space-x-2">
