@@ -1,11 +1,14 @@
 FROM node:22
 
 WORKDIR /app
-COPY ./package.json ./pnpm-lock.yaml ./
+COPY ./package.json ./
+COPY ./prisma ./prisma
 
 RUN npm install -g pnpm
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
+RUN pnpm db:generate
+
 COPY . .
 RUN pnpm build
 RUN pnpm prune --prod
