@@ -24,7 +24,7 @@
 
 ```bash
 git clone <repository-url>
-cd wagashi-simulator
+cd wagashi
 ```
 
 ### 2. 環境変数の設定
@@ -40,7 +40,7 @@ cp env.example .env
 #### 方法A: セットアップスクリプトを使用（推奨）
 
 ```bash
-./setup.sh
+docker compose run --rm app sh ./setup.sh
 ```
 
 #### 方法B: 手動セットアップ
@@ -64,11 +64,6 @@ pnpm db:seed
 ```bash
 # コンテナの起動
 docker-compose up -d
-
-# データベースの初期化（初回のみ）
-docker-compose exec app pnpm db:generate
-docker-compose exec app pnpm db:push
-docker-compose exec app pnpm db:seed
 ```
 
 ### 5. アプリケーションにアクセス
