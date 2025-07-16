@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import type { PlacedItem } from "@/types/types"
+import type { PlacedItem, SweetItem } from "@/types/types"
 import type { BoxSize } from "@/types/types"
 import type { InfoDisplaySettings } from "@/components/info-settings-modal"
-import { sweets } from "@/data/items"
+import { fetchSweets } from "@/services/api-service"
 
 interface PrintLayoutProps {
   placedItems: PlacedItem[]
@@ -31,6 +31,7 @@ export default function PrintLayout({
   const [width, height] = boxSize.split("x").map(Number)
   const cellSize = isPrintPreview ? 25 : 40 // プレビューのサイズを少し大きく
   const [isCanvasReady, setIsCanvasReady] = useState(false)
+  const [sweets, setSweets] = useState<SweetItem[]>([])
 
   // 和菓子のみをフィルタリング
   const sweetItems = placedItems.filter((item) => item.type === "sweet")
@@ -39,6 +40,20 @@ export default function PrintLayout({
 
   // 合計金額を計算
   const totalPrice = sweetItems.reduce((total, item) => total + (item.price || 0), 0)
+
+  // sweetsデータを取得
+  useEffect(() => {
+    const loadSweets = async () => {
+      try {
+        const sweetsData = await fetchSweets()
+        setSweets(sweetsData)
+      } catch (error) {
+        console.error("Failed to load sweets for print:", error)
+        setSweets([])
+      }
+    }
+    loadSweets()
+  }, [])
 
   // キャンバスの初期化と背景・グリッド線の描画
   useEffect(() => {

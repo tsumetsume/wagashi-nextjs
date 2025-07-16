@@ -2,12 +2,12 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { sweets } from "@/data/items"
+import { useState, useEffect } from "react"
 import type { SweetItem } from "@/types/types"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Search } from "lucide-react"
+import { fetchSweets } from "@/services/api-service"
 
 interface InventorySettingsModalProps {
   onClose: () => void
@@ -15,12 +15,24 @@ interface InventorySettingsModalProps {
 }
 
 export default function InventorySettingsModal({ onClose, onUpdateInventory }: InventorySettingsModalProps) {
-  const [localSweets, setLocalSweets] = useState<SweetItem[]>([...sweets])
+  const [localSweets, setLocalSweets] = useState<SweetItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("すべて")
 
+  useEffect(() => {
+    const loadSweets = async () => {
+      try {
+        const sweets = await fetchSweets()
+        setLocalSweets(sweets)
+      } catch (error) {
+        console.error("Failed to fetch sweets:", error)
+      }
+    }
+    loadSweets()
+  }, [])
+
   // カテゴリーの一覧を取得
-  const categories = ["すべて", ...Array.from(new Set(sweets.map((sweet) => sweet.category)))]
+  const categories = ["すべて", ...Array.from(new Set(localSweets.map((sweet) => sweet.category)))]
 
   // 検索とフィルタリング
   const filteredSweets = localSweets.filter((sweet) => {
