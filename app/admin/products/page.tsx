@@ -264,18 +264,20 @@ export default function ProductsPage() {
         </Alert>
       )}
 
-      {/* 検索機能 */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="商品名、説明、カテゴリーで検索..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 pr-4"
-          />
+      {/* 検索機能（フォームが表示されていない時のみ表示） */}
+      {!showForm && (
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="商品名、説明、カテゴリーで検索..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 pr-4"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {showForm && (
         <Card>
@@ -574,6 +576,25 @@ export default function ProductsPage() {
                       <Upload className="h-4 w-4" />
                     </Button>
                   </div>
+                  {/* 配置前画像プレビュー */}
+                  {formData.beforeImagePath && (
+                    <div className="mt-2">
+                      <div className="relative inline-block">
+                        <img
+                          src={formData.beforeImagePath}
+                          alt="配置前画像プレビュー"
+                          className="w-32 h-32 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, beforeImagePath: '' })}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
@@ -602,6 +623,25 @@ export default function ProductsPage() {
                       <Upload className="h-4 w-4" />
                     </Button>
                   </div>
+                  {/* 配置後画像プレビュー */}
+                  {formData.afterImagePath && (
+                    <div className="mt-2">
+                      <div className="relative inline-block">
+                        <img
+                          src={formData.afterImagePath}
+                          alt="配置後画像プレビュー"
+                          className="w-32 h-32 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, afterImagePath: '' })}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
