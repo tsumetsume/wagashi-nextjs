@@ -77,7 +77,7 @@ docker-compose up -d
 
 初期管理者アカウント:
 - メール: `admin@example.com`
-- パスワード: `admin123`
+- パスワード: `I9mJCaDrscR06kV`
 
 ### 機能
 
