@@ -10,7 +10,8 @@ import {
   Users, 
   BarChart3, 
   LogOut,
-  Settings
+  Settings,
+  ExternalLink
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -57,6 +58,19 @@ export function AdminSidebar() {
           )
         })}
       </nav>
+
+      <div className="border-t p-4">
+        {/* フロントページへのリンク */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
+        >
+          <ExternalLink className="mr-3 h-5 w-5 text-gray-400" />
+          フロントページへ
+        </a>
+      </div>
 
       <div className="border-t p-4">
         <button
