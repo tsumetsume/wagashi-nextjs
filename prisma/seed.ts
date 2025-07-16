@@ -7,7 +7,7 @@ async function main() {
   console.log('🌱 シードデータの投入を開始します...')
 
   // 管理者ユーザーの作成
-  const hashedPassword = await bcrypt.hash('admin123', 12)
+  const hashedPassword = await bcrypt.hash('I9mJCaDrscR06kV', 12)
   
   try {
     const adminUser = await prisma.adminUser.upsert({
@@ -291,7 +291,7 @@ async function main() {
   console.log('🎉 シードデータの投入が完了しました！')
   console.log('📧 管理者ログイン情報:')
   console.log('   メール: admin@example.com')
-  console.log('   パスワード: admin123')
+  console.log('   パスワード: I9mJCaDrscR06kV')
 }
 
 main()
