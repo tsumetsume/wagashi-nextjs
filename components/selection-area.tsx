@@ -18,7 +18,7 @@ interface SelectionAreaProps {
 }
 
 export default function SelectionArea({ placedItems, setPlacedItems, inventoryData }: SelectionAreaProps) {
-  const [activeTab, setActiveTab] = useState("焼き菓子")
+  const [activeTab, setActiveTab] = useState("餅菓子")
   const [sweets, setSweets] = useState<SweetItem[]>([])
   const [dividers, setDividers] = useState<DividerItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -42,6 +42,8 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
   
   const categories = sweets.length > 0 ? getCategories() : initialCategories
 
+  console.log("カテゴリー生成 - sweets.length:", sweets.length, "categories:", categories, "activeTab:", activeTab)
+
   // アクティブタブが存在しないカテゴリーになった場合の処理
   useEffect(() => {
     if (sweets.length > 0 && !categories.includes(activeTab)) {
@@ -49,6 +51,25 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
       setActiveTab(firstCategory)
     }
   }, [categories, activeTab, sweets.length])
+
+  // データ読み込み後に最初のカテゴリーをアクティブにする
+  useEffect(() => {
+    console.log("データ読み込み後の処理 - sweets.length:", sweets.length, "activeTab:", activeTab, "categories:", categories)
+    if (sweets.length > 0 && !activeTab) {
+      const firstCategory = categories.find(cat => cat !== "仕切り") || categories[0]
+      console.log("最初のカテゴリーを設定:", firstCategory)
+      setActiveTab(firstCategory)
+    }
+  }, [sweets, categories, activeTab])
+
+  // 初期状態でactiveTabを設定
+  useEffect(() => {
+    if (!activeTab && categories.length > 0) {
+      const firstCategory = categories.find(cat => cat !== "仕切り") || categories[0]
+      console.log("初期カテゴリーを設定:", firstCategory)
+      setActiveTab(firstCategory)
+    }
+  }, [categories, activeTab])
 
   // APIからデータを取得
   const loadData = async () => {
@@ -197,7 +218,7 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
           </Button>
         </div>
       ) : (
-        <Tabs defaultValue="焼き菓子" onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
           <div className="relative">
             {/* 左スクロールボタン */}
             {showLeftArrow && (
@@ -248,7 +269,7 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
           )}
 
           <div className="flex-1 overflow-hidden mt-2">
-            {categories
+            {activeTab && categories
               .filter((category) => category !== "仕切り")
               .map((category) => (
                 <TabsContent key={category} value={category} className="h-full overflow-y-auto">
@@ -262,15 +283,17 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
                 </TabsContent>
               ))}
 
-            <TabsContent value="仕切り" className="h-full overflow-y-auto pr-2">
-              <div className="grid grid-cols-2 gap-4 pb-4 max-h-[60vh] overflow-y-auto">
-                {dividers.length > 0 ? (
-                  dividers.map((divider) => <DividerItemComponent key={divider.id} item={divider} />)
-                ) : (
-                  <div className="col-span-2 text-center py-8 text-gray-500">仕切りアイテムはありません</div>
-                )}
-              </div>
-            </TabsContent>
+            {activeTab && (
+              <TabsContent value="仕切り" className="h-full overflow-y-auto pr-2">
+                <div className="grid grid-cols-2 gap-4 pb-4 max-h-[60vh] overflow-y-auto">
+                  {dividers.length > 0 ? (
+                    dividers.map((divider) => <DividerItemComponent key={divider.id} item={divider} />)
+                  ) : (
+                    <div className="col-span-2 text-center py-8 text-gray-500">仕切りアイテムはありません</div>
+                  )}
+                </div>
+              </TabsContent>
+            )}
           </div>
         </Tabs>
       )}
