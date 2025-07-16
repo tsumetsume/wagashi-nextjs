@@ -1,0 +1,33 @@
+# This is a Docker Compose file for a production environment.
+# It defines a single service named "app" that builds from the current directory.
+# The service exposes port 3000, sets the environment variable NODE_ENV to production,
+# mounts the current directory to /app in the container, and runs a command to build and start the application.
+# docker compose -f compose.production.yml up
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/letsencrypt:/etc/letsencrypt
+      - ./docker/html:/usr/share/nginx/html
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./docker/letsencrypt:/etc/letsencrypt
+      - ./docker/html:/usr/share/nginx/html
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/app
+    command: pnpm start
+    stdin_open: true
+    tty: true

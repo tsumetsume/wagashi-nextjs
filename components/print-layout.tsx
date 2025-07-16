@@ -1,0 +1,293 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import type { PlacedItem } from "@/types/types"
+import type { BoxSize } from "@/types/types"
+import type { InfoDisplaySettings } from "@/components/info-settings-modal"
+import { sweets } from "@/data/items"
+
+interface PrintLayoutProps {
+  placedItems: PlacedItem[]
+  boxSize: BoxSize
+  title: string
+  includeItemList: boolean
+  includePrice: boolean
+  includeAllergies: boolean
+  infoSettings: InfoDisplaySettings
+  isPrintPreview: boolean
+}
+
+export default function PrintLayout({
+  placedItems,
+  boxSize,
+  title,
+  includeItemList,
+  includePrice,
+  includeAllergies,
+  infoSettings,
+  isPrintPreview,
+}: PrintLayoutProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [width, height] = boxSize.split("x").map(Number)
+  const cellSize = isPrintPreview ? 25 : 40 // プレビューのサイズを少し大きく
+  const [isCanvasReady, setIsCanvasReady] = useState(false)
+
+  // 和菓子のみをフィルタリング
+  const sweetItems = placedItems.filter((item) => item.type === "sweet")
+  // 仕切りのみをフィルタリング
+  const dividerItems = placedItems.filter((item) => item.type === "divider")
+
+  // 合計金額を計算
+  const totalPrice = sweetItems.reduce((total, item) => total + (item.price || 0), 0)
+
+  // キャンバスの初期化と背景・グリッド線の描画
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // キャンバスのサイズを設定
+    canvas.width = width * cellSize
+    canvas.height = height * cellSize
+
+    // 背景を描画
+    ctx.fillStyle = "#FFF7E6" // 薄い琥珀色の背景
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    // グリッド線を描画
+    ctx.strokeStyle = "#E9D8BE"
+    ctx.lineWidth = 1
+
+    // 縦線
+    for (let i = 0; i <= width; i++) {
+      ctx.beginPath()
+      ctx.moveTo(i * cellSize, 0)
+      ctx.lineTo(i * cellSize, canvas.height)
+      ctx.stroke()
+    }
+
+    // 横線
+    for (let i = 0; i <= height; i++) {
+      ctx.beginPath()
+      ctx.moveTo(0, i * cellSize)
+      ctx.lineTo(canvas.width, i * cellSize)
+      ctx.stroke()
+    }
+
+    // 枠線を描画
+    ctx.strokeStyle = "#92400E"
+    ctx.lineWidth = 3
+    ctx.strokeRect(0, 0, canvas.width, canvas.height)
+
+    // 和菓子の描画は別のuseEffectで行う（画像の読み込みを待つため）
+  }, [width, height, cellSize, isPrintPreview])
+
+  // 和菓子の描画（画像の読み込みを待つ）
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // 読み込む画像の総数
+    const totalImages = sweetItems.length
+    let loadedImages = 0
+    let hasStartedDrawing = false
+
+    // すべての和菓子を描画
+    const drawAllSweets = () => {
+      if (hasStartedDrawing) return
+      hasStartedDrawing = true
+
+      // 和菓子の背景と枠線を先に描画
+      sweetItems.forEach((sweet) => {
+        // 和菓子の背景
+        ctx.fillStyle = "#FFFFFF"
+        ctx.fillRect(sweet.x * cellSize, sweet.y * cellSize, sweet.width * cellSize, sweet.height * cellSize)
+
+        // 和菓子の枠線
+        ctx.strokeStyle = "#D4A76A"
+        ctx.lineWidth = 1
+        ctx.strokeRect(sweet.x * cellSize, sweet.y * cellSize, sweet.width * cellSize, sweet.height * cellSize)
+
+        // 和菓子の名前を仮表示（画像が読み込まれるまで）
+        ctx.fillStyle = "#92400E"
+        ctx.font = `${cellSize / 3}px sans-serif`
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.fillText(sweet.name, (sweet.x + sweet.width / 2) * cellSize, (sweet.y + sweet.height / 2) * cellSize)
+      })
+
+      // 仕切りを描画（和菓子の上に描画するため、和菓子の描画後に行う）
+      dividerItems.forEach((divider) => {
+        ctx.fillStyle = "#92400E" // 琥珀色の濃い色
+
+        if (divider.orientation === "horizontal") {
+          ctx.fillRect(divider.x * cellSize, divider.y * cellSize - 1, divider.width * cellSize, 2)
+        } else {
+          ctx.fillRect(divider.x * cellSize - 1, divider.y * cellSize, 2, divider.height * cellSize)
+        }
+      })
+
+      setIsCanvasReady(true)
+    }
+
+    // 画像がない場合や少ない場合は早めに描画開始
+    if (totalImages === 0) {
+      drawAllSweets()
+      return
+    }
+
+    // 各和菓子の画像を読み込んで描画
+    sweetItems.forEach((sweet) => {
+      if (!sweet.imageUrl) {
+        loadedImages++
+        if (loadedImages >= totalImages) {
+          drawAllSweets()
+        }
+        return
+      }
+
+      const img = new Image()
+      img.crossOrigin = "anonymous" // CORS対策
+      img.src = sweet.imageUrl
+
+      img.onload = () => {
+        // 画像をセルサイズに合わせて描画
+        const aspectRatio = img.width / img.height
+        let drawWidth = sweet.width * cellSize
+        let drawHeight = sweet.height * cellSize
+
+        // アスペクト比を維持
+        if (aspectRatio > 1) {
+          drawHeight = drawWidth / aspectRatio
+        } else {
+          drawWidth = drawHeight * aspectRatio
+        }
+
+        // 中央に配置
+        const offsetX = (sweet.width * cellSize - drawWidth) / 2
+        const offsetY = (sweet.height * cellSize - drawHeight) / 2
+
+        ctx.save()
+
+        // 回転がある場合は適用
+        if (sweet.rotation) {
+          const centerX = (sweet.x + sweet.width / 2) * cellSize
+          const centerY = (sweet.y + sweet.height / 2) * cellSize
+
+          ctx.translate(centerX, centerY)
+          ctx.rotate((sweet.rotation * Math.PI) / 180)
+          ctx.translate(-centerX, -centerY)
+        }
+
+        ctx.drawImage(img, sweet.x * cellSize + offsetX, sweet.y * cellSize + offsetY, drawWidth, drawHeight)
+
+        ctx.restore()
+
+        // 読み込んだ画像をカウント
+        loadedImages++
+        if (loadedImages >= totalImages) {
+          drawAllSweets()
+        }
+      }
+
+      img.onerror = () => {
+        // 画像の読み込みに失敗した場合もカウント
+        loadedImages++
+        if (loadedImages >= totalImages) {
+          drawAllSweets()
+        }
+      }
+    })
+
+    // 一定時間後に強制的に描画開始（画像読み込みのタイムアウト）
+    const timeoutId = setTimeout(() => {
+      if (!hasStartedDrawing) {
+        drawAllSweets()
+      }
+    }, 2000)
+
+    return () => clearTimeout(timeoutId)
+  }, [sweetItems, dividerItems, cellSize])
+
+  // アレルギー情報を取得する関数
+  const getAllergies = (itemId: string): string[] => {
+    const sweet = sweets.find((s) => s.id === itemId)
+    return sweet?.allergies || []
+  }
+
+  // 全てのアレルギー情報を集約
+  const allAllergies = new Set<string>()
+  sweetItems.forEach((item) => {
+    const allergies = getAllergies(item.itemId)
+    allergies.forEach((allergy) => allAllergies.add(allergy))
+  })
+
+  return (
+    <div className={`print-layout ${isPrintPreview ? "print-preview" : ""}`}>
+      <div className="print-header">
+        <h1 className="print-title">{title}</h1>
+        <div className="print-date">作成日: {new Date().toLocaleDateString("ja-JP")}</div>
+      </div>
+
+      <div className="print-box-container">
+        <canvas ref={canvasRef} className={`print-canvas ${isCanvasReady ? "opacity-100" : "opacity-70"}`} />
+        {!isCanvasReady && <div className="print-canvas-loading">描画中...</div>}
+      </div>
+
+      {includePrice && (
+        <div className="print-total-price">
+          <span>合計金額: </span>
+          <span className="price">{totalPrice.toLocaleString()}円</span>
+        </div>
+      )}
+
+      {includeAllergies && allAllergies.size > 0 && (
+        <div className="print-allergies">
+          <h3>アレルギー情報</h3>
+          <div className="allergy-tags">
+            {Array.from(allAllergies).map((allergy, index) => (
+              <span key={index} className="allergy-tag">
+                {allergy}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {includeItemList && sweetItems.length > 0 && (
+        <div className="print-item-list">
+          <h3>商品リスト</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>商品名</th>
+                {includePrice && <th>価格</th>}
+                {includeAllergies && <th>アレルギー</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {sweetItems.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.name}</td>
+                  {includePrice && <td>{item.price?.toLocaleString() || 0}円</td>}
+                  {includeAllergies && (
+                    <td>{getAllergies(item.itemId).length > 0 ? getAllergies(item.itemId).join(", ") : "なし"}</td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="print-footer">
+        <p>和菓子詰め合わせシミュレーター</p>
+      </div>
+    </div>
+  )
+}

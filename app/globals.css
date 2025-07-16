@@ -1,0 +1,499 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* カスタムカラー変数 */
+  --color-indigo: #1d3b58;
+  --color-indigo-light: #2a547a;
+  --color-indigo-dark: #0f2a42;
+  --color-green: #2b5f5a;
+  --color-green-light: #3a7a74;
+  --color-beige: #f3f0e7;
+  --color-beige-dark: #e5e0d5;
+  --color-accent: #a0522d;
+  --color-accent-light: #c27c5d;
+  --color-gold: #bf9b30;
+  --color-red: #9d2933;
+  --color-black: #1a1a1a;
+  --color-white: #ffffff;
+  --color-gray: #6d6d6d;
+  --color-gray-light: #adadad;
+
+  /* Tailwind基本変数 */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+}
+
+/* フォント関連のスタイルを追加 */
+body {
+  font-family: var(--font-noto-sans-jp), var(--font-inter), system-ui, -apple-system, sans-serif;
+  background-color: var(--color-beige);
+  color: var(--color-black);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-noto-serif-jp), var(--font-inter), system-ui, -apple-system, serif;
+  font-weight: 500;
+}
+
+/* 和紙のような質感を持つ背景 */
+.washi-bg {
+  background-color: var(--color-beige);
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23dbd5c8' fill-opacity='0.3' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+/* 和風の区切り線 */
+.japanese-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-gray), transparent);
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.japanese-divider::before {
+  content: "❖";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-gray);
+  font-size: 14px;
+}
+
+/* 和風のボタン */
+.btn-japanese {
+  background-color: var(--color-indigo);
+  color: var(--color-white);
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 2px;
+  font-family: var(--font-noto-serif-jp), var(--font-inter), system-ui, -apple-system, serif;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-japanese:hover {
+  background-color: var(--color-indigo-light);
+}
+
+.btn-japanese::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-gold);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: right;
+}
+
+.btn-japanese:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* アニメーション用のクラス */
+.placed-item {
+  transition: left 0.3s ease, top 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+}
+
+.placed-item-enter {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.placed-item-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.placed-item-exit {
+  opacity: 1;
+}
+
+.placed-item-exit-active {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.drag-over {
+  background-color: rgba(29, 59, 88, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+/* 印刷用スタイル */
+.print-layout {
+  font-family: var(--font-noto-serif-jp), var(--font-inter), system-ui, -apple-system, serif;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.print-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-gray-light);
+  padding-bottom: 10px;
+}
+
+.print-title {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--color-indigo);
+}
+
+.print-date {
+  font-size: 14px;
+  color: var(--color-gray);
+}
+
+.print-box-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.print-canvas {
+  border: 2px solid var(--color-indigo);
+  max-width: 100%;
+  height: auto;
+  transition: opacity 0.3s ease;
+}
+
+.print-canvas-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--color-indigo);
+  font-size: 14px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px 10px;
+  border-radius: 2px;
+}
+
+.print-total-price {
+  text-align: right;
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-family: var(--font-noto-serif-jp), var(--font-inter), system-ui, -apple-system, serif;
+}
+
+.print-total-price .price {
+  font-weight: 500;
+  color: var(--color-indigo);
+}
+
+.print-allergies {
+  margin-bottom: 20px;
+  border: 1px solid var(--color-gray-light);
+  padding: 15px;
+  border-radius: 2px;
+  background-color: var(--color-beige-dark);
+}
+
+.print-allergies h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-indigo);
+  border-left: 3px solid var(--color-red);
+  padding-left: 8px;
+}
+
+.allergy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.allergy-tag {
+  background-color: var(--color-red);
+  color: var(--color-white);
+  padding: 4px 12px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-family: var(--font-noto-sans-jp), var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+.print-item-list {
+  margin-bottom: 20px;
+}
+
+.print-item-list h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-indigo);
+  border-left: 3px solid var(--color-indigo);
+  padding-left: 8px;
+}
+
+.print-item-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.print-item-list th,
+.print-item-list td {
+  border: 1px solid var(--color-gray-light);
+  padding: 8px;
+  text-align: left;
+}
+
+.print-item-list th {
+  background-color: var(--color-indigo);
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.print-footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-gray);
+  border-top: 1px solid var(--color-gray-light);
+  padding-top: 15px;
+}
+
+/* 印刷プレビュー用のスタイル */
+.print-preview {
+  max-width: 100%;
+  padding: 10px;
+}
+
+.print-preview .print-header {
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+}
+
+.print-preview .print-title {
+  font-size: 18px;
+}
+
+.print-preview .print-date {
+  font-size: 12px;
+}
+
+.print-preview .print-box-container {
+  margin-bottom: 10px;
+}
+
+.print-preview .print-total-price {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.print-preview .print-allergies {
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.print-preview .print-allergies h3 {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.print-preview .allergy-tag {
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+.print-preview .print-item-list {
+  margin-bottom: 10px;
+}
+
+.print-preview .print-item-list h3 {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.print-preview .print-item-list th,
+.print-preview .print-item-list td {
+  padding: 4px;
+  font-size: 12px;
+}
+
+.print-preview .print-footer {
+  margin-top: 10px;
+  padding-top: 5px;
+  font-size: 10px;
+}
+
+/* 印刷時のスタイル */
+@media print {
+  body.printing * {
+    visibility: hidden;
+  }
+
+  body.printing .print-container,
+  body.printing .print-container * {
+    visibility: visible;
+  }
+
+  body.printing .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  body.printing .print-layout {
+    padding: 0;
+  }
+
+  /* ダイアログを非表示 */
+  body.printing .print-container {
+    background: white;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 15px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  /* 印刷時のキャンバスサイズを調整 */
+  body.printing .print-canvas {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+
+  /* 印刷時のテーブルスタイル調整 */
+  body.printing .print-item-list table {
+    page-break-inside: auto;
+  }
+
+  body.printing .print-item-list tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
+
+/* ダイアログオーバーレイのスタイル調整 - セレクタを修正 */
+[role="dialog"] {
+  background-color: white !important;
+}
+
+/* Radixダイアログのオーバーレイ */
+[data-radix-popper-content-wrapper] {
+  background-color: white !important;
+}
+
+/* ダイアログのオーバーレイ部分 */
+[data-radix-dialog-overlay] {
+  background-color: rgba(29, 59, 88, 0.8) !important;
+  opacity: 1 !important;
+}
+
+/* ダイアログのコンテンツ部分 */
+[data-radix-dialog-content] {
+  background-color: var(--color-beige) !important;
+  opacity: 1 !important;
+  border: 1px solid var(--color-indigo-light) !important;
+}
+
+/* モーダルの背景を強制的に不透明に */
+.fixed.z-50 {
+  background-color: var(--color-beige) !important;
+}
+
+/* モーダルのオーバーレイを強制的に不透明に */
+.fixed.inset-0.z-50 {
+  background-color: rgba(29, 59, 88, 0.8) !important;
+  opacity: 1 !important;
+}
+
+/* スクロールバーを非表示にするユーティリティクラス */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Tailwindのユーティリティクラスのベース */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
