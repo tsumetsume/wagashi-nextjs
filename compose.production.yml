@@ -30,9 +30,8 @@ services:
       - NEXTAUTH_SECRET=your-secret-key-here-change-this-in-production
       - NEXTAUTH_URL=http://localhost:3000
     volumes:
-      - ./:/app
       - ./public/uploads:/app/public/uploads
-    command: pnpm db:generate && pnpm start
+    command: pnpm start
     stdin_open: true
     tty: true
     depends_on:
