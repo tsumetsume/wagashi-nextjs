@@ -492,183 +492,188 @@ export default function ProductsPage() {
         </Card>
       )}
 
-      {/* カテゴリータブ */}
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-        <div className="overflow-x-auto">
-          <TabsList className="inline-flex min-w-full">
-            <TabsTrigger value="all" className="whitespace-nowrap">すべて ({filteredProducts.length})</TabsTrigger>
-            {categories.map((category) => (
-              <TabsTrigger key={category.id} value={category.id} className="whitespace-nowrap">
-                {category.name} ({productsByCategory[category.id]?.length || 0})
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+      {/* 商品一覧（フォームが表示されていない時のみ表示） */}
+      {!showForm && (
+        <>
+          {/* カテゴリータブ */}
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
+            <div className="overflow-x-auto">
+              <TabsList className="inline-flex min-w-full">
+                <TabsTrigger value="all" className="whitespace-nowrap">すべて ({filteredProducts.length})</TabsTrigger>
+                {categories.map((category) => (
+                  <TabsTrigger key={category.id} value={category.id} className="whitespace-nowrap">
+                    {category.name} ({productsByCategory[category.id]?.length || 0})
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-        <TabsContent value="all" className="mt-6">
-          <div className="grid gap-4">
-            {filteredProducts.map((product) => (
-              <Card key={product.id}>
-                <CardContent className="p-4">
-                  <div className="flex gap-4">
-                    {/* 商品画像 */}
-                    <div className="flex-shrink-0">
-                      {product.beforeImagePath ? (
-                        <img
-                          src={product.beforeImagePath}
-                          alt={product.name}
-                          className="w-20 h-20 object-cover rounded-lg border"
-                        />
-                      ) : (
-                        <div className="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* 商品情報 */}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-lg">{product.name}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary">{product.category.name}</Badge>
-                            <Badge variant="outline">{product.size}</Badge>
-                            <span className="text-lg font-semibold text-green-600">
-                              ¥{product.price.toLocaleString()}
-                            </span>
-                          </div>
-                          {product.description && (
-                            <p className="text-sm text-gray-600 mt-2">{product.description}</p>
-                          )}
-                          <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                            {product.calories && (
-                              <span>カロリー: {product.calories}kcal</span>
-                            )}
-                            {product.allergyInfo && (
-                              <span>アレルギー: {product.allergyInfo}</span>
-                            )}
-                            {product.stock && (
-                              <span>在庫: {product.stock.quantity}個</span>
-                            )}
-                          </div>
-                          {(product.ingredients || product.nutritionInfo || product.shelfLife || product.storageMethod) && (
-                            <div className="mt-2 text-xs text-gray-400">
-                              {product.ingredients && <div>原材料: {product.ingredients}</div>}
-                              {product.shelfLife && <div>日持ち: {product.shelfLife}</div>}
-                              {product.storageMethod && <div>保存方法: {product.storageMethod}</div>}
+            <TabsContent value="all" className="mt-6">
+              <div className="grid gap-4">
+                {filteredProducts.map((product) => (
+                  <Card key={product.id}>
+                    <CardContent className="p-4">
+                      <div className="flex gap-4">
+                        {/* 商品画像 */}
+                        <div className="flex-shrink-0">
+                          {product.beforeImagePath ? (
+                            <img
+                              src={product.beforeImagePath}
+                              alt={product.name}
+                              className="w-20 h-20 object-cover rounded-lg border"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center">
+                              <ImageIcon className="h-8 w-8 text-gray-400" />
                             </div>
                           )}
                         </div>
                         
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(product)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDelete(product.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        {/* 商品情報 */}
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold text-lg">{product.name}</h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="secondary">{product.category.name}</Badge>
+                                <Badge variant="outline">{product.size}</Badge>
+                                <span className="text-lg font-semibold text-green-600">
+                                  ¥{product.price.toLocaleString()}
+                                </span>
+                              </div>
+                              {product.description && (
+                                <p className="text-sm text-gray-600 mt-2">{product.description}</p>
+                              )}
+                              <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                                {product.calories && (
+                                  <span>カロリー: {product.calories}kcal</span>
+                                )}
+                                {product.allergyInfo && (
+                                  <span>アレルギー: {product.allergyInfo}</span>
+                                )}
+                                {product.stock && (
+                                  <span>在庫: {product.stock.quantity}個</span>
+                                )}
+                              </div>
+                              {(product.ingredients || product.nutritionInfo || product.shelfLife || product.storageMethod) && (
+                                <div className="mt-2 text-xs text-gray-400">
+                                  {product.ingredients && <div>原材料: {product.ingredients}</div>}
+                                  {product.shelfLife && <div>日持ち: {product.shelfLife}</div>}
+                                  {product.storageMethod && <div>保存方法: {product.storageMethod}</div>}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(product)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDelete(product.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
 
-        {categories.map((category) => (
-          <TabsContent key={category.id} value={category.id} className="mt-6">
-            <div className="grid gap-4">
-              {productsByCategory[category.id]?.map((product) => (
-                <Card key={product.id}>
-                  <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      {/* 商品画像 */}
-                      <div className="flex-shrink-0">
-                        {product.beforeImagePath ? (
-                          <img
-                            src={product.beforeImagePath}
-                            alt={product.name}
-                            className="w-20 h-20 object-cover rounded-lg border"
-                          />
-                        ) : (
-                          <div className="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center">
-                            <ImageIcon className="h-8 w-8 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* 商品情報 */}
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold text-lg">{product.name}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="secondary">{product.category.name}</Badge>
-                              <Badge variant="outline">{product.size}</Badge>
-                              <span className="text-lg font-semibold text-green-600">
-                                ¥{product.price.toLocaleString()}
-                              </span>
-                            </div>
-                            {product.description && (
-                              <p className="text-sm text-gray-600 mt-2">{product.description}</p>
-                            )}
-                            <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                              {product.calories && (
-                                <span>カロリー: {product.calories}kcal</span>
-                              )}
-                              {product.allergyInfo && (
-                                <span>アレルギー: {product.allergyInfo}</span>
-                              )}
-                              {product.stock && (
-                                <span>在庫: {product.stock.quantity}個</span>
-                              )}
-                            </div>
-                            {(product.ingredients || product.nutritionInfo || product.shelfLife || product.storageMethod) && (
-                              <div className="mt-2 text-xs text-gray-400">
-                                {product.ingredients && <div>原材料: {product.ingredients}</div>}
-                                {product.shelfLife && <div>日持ち: {product.shelfLife}</div>}
-                                {product.storageMethod && <div>保存方法: {product.storageMethod}</div>}
+            {categories.map((category) => (
+              <TabsContent key={category.id} value={category.id} className="mt-6">
+                <div className="grid gap-4">
+                  {productsByCategory[category.id]?.map((product) => (
+                    <Card key={product.id}>
+                      <CardContent className="p-4">
+                        <div className="flex gap-4">
+                          {/* 商品画像 */}
+                          <div className="flex-shrink-0">
+                            {product.beforeImagePath ? (
+                              <img
+                                src={product.beforeImagePath}
+                                alt={product.name}
+                                className="w-20 h-20 object-cover rounded-lg border"
+                              />
+                            ) : (
+                              <div className="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center">
+                                <ImageIcon className="h-8 w-8 text-gray-400" />
                               </div>
                             )}
                           </div>
                           
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEdit(product)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDelete(product.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                          {/* 商品情報 */}
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-semibold text-lg">{product.name}</h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="secondary">{product.category.name}</Badge>
+                                  <Badge variant="outline">{product.size}</Badge>
+                                  <span className="text-lg font-semibold text-green-600">
+                                    ¥{product.price.toLocaleString()}
+                                  </span>
+                                </div>
+                                {product.description && (
+                                  <p className="text-sm text-gray-600 mt-2">{product.description}</p>
+                                )}
+                                <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                                  {product.calories && (
+                                    <span>カロリー: {product.calories}kcal</span>
+                                  )}
+                                  {product.allergyInfo && (
+                                    <span>アレルギー: {product.allergyInfo}</span>
+                                  )}
+                                  {product.stock && (
+                                    <span>在庫: {product.stock.quantity}個</span>
+                                  )}
+                                </div>
+                                {(product.ingredients || product.nutritionInfo || product.shelfLife || product.storageMethod) && (
+                                  <div className="mt-2 text-xs text-gray-400">
+                                    {product.ingredients && <div>原材料: {product.ingredients}</div>}
+                                    {product.shelfLife && <div>日持ち: {product.shelfLife}</div>}
+                                    {product.storageMethod && <div>保存方法: {product.storageMethod}</div>}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEdit(product)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDelete(product.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </>
+      )}
     </div>
   )
 } 
