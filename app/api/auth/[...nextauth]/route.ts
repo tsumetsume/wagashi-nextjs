@@ -45,7 +45,8 @@ export const authOptions: AuthOptions = {
     strategy: 'jwt' as const
   },
   pages: {
-    signIn: '/login'
+    signIn: '/login',
+    signOut: '/login'
   },
   callbacks: {
     async jwt({ token, user }: any) {
@@ -60,6 +61,15 @@ export const authOptions: AuthOptions = {
         session.user.role = token.role as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // ログアウト後のリダイレクトを制御
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      } else if (new URL(url).origin === baseUrl) {
+        return url
+      }
+      return baseUrl
     }
   }
 }

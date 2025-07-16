@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { 
   Home, 
@@ -26,6 +26,15 @@ const navigation = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await signOut({ 
+      callbackUrl: '/login',
+      redirect: false 
+    })
+    router.push('/login')
+  }
 
   return (
     <div className="flex h-full w-64 flex-col bg-white shadow-lg">
@@ -74,7 +83,7 @@ export function AdminSidebar() {
 
       <div className="border-t p-4">
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={handleLogout}
           className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900"
         >
           <LogOut className="mr-3 h-5 w-5 text-gray-400" />
