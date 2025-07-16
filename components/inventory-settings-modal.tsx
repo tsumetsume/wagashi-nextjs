@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import type { SweetItem } from "@/types/types"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Search } from "lucide-react"
+import { Search, ChevronDown } from "lucide-react"
 import { fetchSweets } from "@/services/api-service"
 
 interface InventorySettingsModalProps {
@@ -73,12 +73,12 @@ export default function InventorySettingsModal({ onClose, onUpdateInventory }: I
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>在庫管理</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {/* 検索とフィルター */}
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
@@ -114,10 +114,20 @@ export default function InventorySettingsModal({ onClose, onUpdateInventory }: I
             </Button>
           </div>
 
+          {/* スクロールインジケーター */}
+          {filteredSweets.length > 8 && (
+            <div className="flex justify-center py-2">
+              <div className="flex items-center text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                <ChevronDown className="h-4 w-4 mr-1 animate-bounce" />
+                スクロールして商品を確認
+              </div>
+            </div>
+          )}
+
           {/* 在庫リスト */}
           <div className="border rounded-md overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     商品名
@@ -158,7 +168,7 @@ export default function InventorySettingsModal({ onClose, onUpdateInventory }: I
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 border-t bg-gray-50 px-6 py-4 -mx-6 -mb-6">
           <Button variant="outline" onClick={onClose}>
             キャンセル
           </Button>
