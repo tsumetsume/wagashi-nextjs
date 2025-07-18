@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
 interface Category {
@@ -19,6 +20,7 @@ interface Category {
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -46,6 +48,7 @@ export default function CategoriesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       const url = editingCategory 
         ? `/api/admin/categories/${editingCategory.id}`
@@ -68,12 +71,15 @@ export default function CategoriesPage() {
       resetForm()
     } catch (error) {
       setError(error instanceof Error ? error.message : '操作に失敗しました')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('このカテゴリーを削除しますか？')) return
 
+    setIsSubmitting(true)
     try {
       const response = await fetch(`/api/admin/categories/${id}`, {
         method: 'DELETE'
@@ -87,6 +93,8 @@ export default function CategoriesPage() {
       await fetchCategories()
     } catch (error) {
       setError(error instanceof Error ? error.message : '削除に失敗しました')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -112,6 +120,7 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
+      <LoadingOverlay isLoading={isSubmitting} message="処理中..." />
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">カテゴリー管理</h1>
         <Button onClick={() => setShowForm(true)}>

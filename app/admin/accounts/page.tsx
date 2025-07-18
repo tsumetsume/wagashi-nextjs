@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { Plus, Edit, Trash2, Users } from 'lucide-react'
 
 interface AdminUser {
@@ -21,6 +22,7 @@ interface AdminUser {
 export default function AccountsPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
@@ -50,6 +52,7 @@ export default function AccountsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       const response = await fetch('/api/admin/accounts', {
         method: 'POST',
@@ -66,12 +69,15 @@ export default function AccountsPage() {
       resetForm()
     } catch (error) {
       setError(error instanceof Error ? error.message : '操作に失敗しました')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('この管理者を削除しますか？')) return
 
+    setIsSubmitting(true)
     try {
       const response = await fetch(`/api/admin/accounts/${id}`, {
         method: 'DELETE'
@@ -85,6 +91,8 @@ export default function AccountsPage() {
       await fetchUsers()
     } catch (error) {
       setError(error instanceof Error ? error.message : '削除に失敗しました')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -106,6 +114,7 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
+      <LoadingOverlay isLoading={isSubmitting} message="処理中..." />
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">アカウント管理</h1>
         <Button onClick={() => setShowForm(true)}>

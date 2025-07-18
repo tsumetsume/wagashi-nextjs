@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { 
   Settings, 
   Bell, 
@@ -77,6 +78,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      <LoadingOverlay isLoading={isLoading} message="設定を保存中..." />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">設定</h1>

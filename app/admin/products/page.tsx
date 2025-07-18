@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { Plus, Edit, Trash2, Upload, Search, Image as ImageIcon, X } from 'lucide-react'
 
 interface Category {
@@ -44,6 +45,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -131,6 +133,7 @@ export default function ProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       const url = editingProduct 
         ? `/api/admin/products/${editingProduct.id}`
@@ -159,12 +162,15 @@ export default function ProductsPage() {
       resetForm()
     } catch (error) {
       setError(error instanceof Error ? error.message : '操作に失敗しました')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('この商品を削除しますか？')) return
 
+    setIsSubmitting(true)
     try {
       const response = await fetch(`/api/admin/products/${id}`, {
         method: 'DELETE'
@@ -178,6 +184,8 @@ export default function ProductsPage() {
       await fetchData()
     } catch (error) {
       setError(error instanceof Error ? error.message : '削除に失敗しました')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -254,6 +262,7 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
+      <LoadingOverlay isLoading={isSubmitting} message="処理中..." />
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">商品管理</h1>
         <Button onClick={() => setShowForm(true)}>

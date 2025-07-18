@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { Save, Package, Search } from 'lucide-react'
 
 interface Category {
@@ -34,6 +35,7 @@ export default function StockPage() {
   const [stocks, setStocks] = useState<Stock[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [updatingStocks, setUpdatingStocks] = useState<Set<string>>(new Set())
@@ -79,6 +81,7 @@ export default function StockPage() {
 
   const handleSaveStock = async (stock: Stock) => {
     setUpdatingStocks(prev => new Set(prev).add(stock.id))
+    setIsSubmitting(true)
     setError('')
     setSuccess('')
 
@@ -107,6 +110,7 @@ export default function StockPage() {
         newSet.delete(stock.id)
         return newSet
       })
+      setIsSubmitting(false)
     }
   }
 
@@ -135,6 +139,7 @@ export default function StockPage() {
 
   return (
     <div className="space-y-6">
+      <LoadingOverlay isLoading={isSubmitting} message="在庫を更新中..." />
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">在庫管理</h1>
         <div className="flex items-center space-x-2">
