@@ -99,6 +99,56 @@ export default function PrintLayout({
     // 和菓子の描画は別のuseEffectで行う（画像の読み込みを待つため）
   }, [width, height, cellSize, isPrintPreview])
 
+  // テキストを複数行に分割して描画する関数
+  const drawMultilineText = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    maxHeight: number,
+    fontSize: number
+  ) => {
+    ctx.font = `${fontSize}px sans-serif`
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+
+    const words = text.split("")
+    const lines: string[] = []
+    let currentLine = ""
+
+    // 文字を1文字ずつチェックして行に分割
+    for (const char of words) {
+      const testLine = currentLine + char
+      const metrics = ctx.measureText(testLine)
+      
+      if (metrics.width > maxWidth && currentLine !== "") {
+        lines.push(currentLine)
+        currentLine = char
+      } else {
+        currentLine = testLine
+      }
+    }
+    
+    if (currentLine) {
+      lines.push(currentLine)
+    }
+
+    // 行数が多すぎる場合は文字サイズを小さくして再試行
+    const lineHeight = fontSize * 1.2
+    const totalHeight = lines.length * lineHeight
+    
+    if (totalHeight > maxHeight && fontSize > 8) {
+      return drawMultilineText(ctx, text, x, y, maxWidth, maxHeight, fontSize - 2)
+    }
+
+    // 各行を描画
+    const startY = y - (totalHeight / 2) + (lineHeight / 2)
+    lines.forEach((line, index) => {
+      ctx.fillText(line, x, startY + index * lineHeight)
+    })
+  }
+
   // 和菓子の描画（画像の読み込みを待つ）
   useEffect(() => {
     const canvas = canvasRef.current
@@ -128,12 +178,21 @@ export default function PrintLayout({
         ctx.lineWidth = 1
         ctx.strokeRect(sweet.x * cellSize, sweet.y * cellSize, sweet.width * cellSize, sweet.height * cellSize)
 
-        // 和菓子の名前を仮表示（画像が読み込まれるまで）
+        // 和菓子の名前を複数行で表示（画像が読み込まれるまで）
         ctx.fillStyle = "#92400E"
-        ctx.font = `${cellSize / 3}px sans-serif`
-        ctx.textAlign = "center"
-        ctx.textBaseline = "middle"
-        ctx.fillText(sweet.name, (sweet.x + sweet.width / 2) * cellSize, (sweet.y + sweet.height / 2) * cellSize)
+        const textMaxWidth = sweet.width * cellSize - 8 // パディングを考慮
+        const textMaxHeight = sweet.height * cellSize - 8 // パディングを考慮
+        const baseFontSize = Math.max(8, Math.min(cellSize / 3, 16)) // 最小8px、最大16px
+        
+        drawMultilineText(
+          ctx,
+          sweet.name,
+          (sweet.x + sweet.width / 2) * cellSize,
+          (sweet.y + sweet.height / 2) * cellSize,
+          textMaxWidth,
+          textMaxHeight,
+          baseFontSize
+        )
       })
 
       // 仕切りを描画（和菓子の上に描画するため、和菓子の描画後に行う）
@@ -171,23 +230,12 @@ export default function PrintLayout({
       img.src = sweet.imageUrl
 
       img.onload = () => {
-        // 画像をセルサイズに合わせて描画
-        const aspectRatio = img.width / img.height
-        let drawWidth = sweet.width * cellSize
-        let drawHeight = sweet.height * cellSize
-
-        // アスペクト比を維持
-        if (aspectRatio > 1) {
-          drawHeight = drawWidth / aspectRatio
-        } else {
-          drawWidth = drawHeight * aspectRatio
-        }
-
-        // 中央に配置
-        const offsetX = (sweet.width * cellSize - drawWidth) / 2
-        const offsetY = (sweet.height * cellSize - drawHeight) / 2
-
         ctx.save()
+
+        // クリッピング領域を設定（商品枠内に画像を制限）
+        ctx.beginPath()
+        ctx.rect(sweet.x * cellSize, sweet.y * cellSize, sweet.width * cellSize, sweet.height * cellSize)
+        ctx.clip()
 
         // 回転がある場合は適用
         if (sweet.rotation) {
@@ -199,7 +247,34 @@ export default function PrintLayout({
           ctx.translate(-centerX, -centerY)
         }
 
-        ctx.drawImage(img, sweet.x * cellSize + offsetX, sweet.y * cellSize + offsetY, drawWidth, drawHeight)
+        // 画像をセルサイズに合わせて描画
+        const aspectRatio = img.width / img.height
+        const cellWidth = sweet.width * cellSize
+        const cellHeight = sweet.height * cellSize
+        
+        let drawWidth = cellWidth
+        let drawHeight = cellHeight
+
+        // アスペクト比を維持しつつ、セル内に収まるようにサイズ調整
+        if (aspectRatio > cellWidth / cellHeight) {
+          // 横長の画像の場合、幅を基準にする
+          drawHeight = drawWidth / aspectRatio
+        } else {
+          // 縦長の画像の場合、高さを基準にする
+          drawWidth = drawHeight * aspectRatio
+        }
+
+        // 中央に配置
+        const offsetX = (cellWidth - drawWidth) / 2
+        const offsetY = (cellHeight - drawHeight) / 2
+
+        ctx.drawImage(
+          img, 
+          sweet.x * cellSize + offsetX, 
+          sweet.y * cellSize + offsetY, 
+          drawWidth, 
+          drawHeight
+        )
 
         ctx.restore()
 
