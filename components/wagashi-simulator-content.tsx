@@ -93,6 +93,11 @@ export default function WagashiSimulatorContent({
     window.dispatchEvent(event)
   }
 
+  // 配置済みアイテムを削除する関数
+  const handleRemovePlacedItems = (itemIds: string[]) => {
+    setPlacedItems(prev => prev.filter(item => !itemIds.includes(item.id)))
+  }
+
   // ページをリロードする関数
   const handleReload = () => {
     window.location.reload()
@@ -206,7 +211,12 @@ export default function WagashiSimulatorContent({
         />
       )}
       {isInventoryOpen && (
-        <InventorySettingsModal onClose={() => setIsInventoryOpen(false)} onUpdateInventory={handleUpdateInventory} />
+        <InventorySettingsModal 
+          onClose={() => setIsInventoryOpen(false)} 
+          onUpdateInventory={handleUpdateInventory}
+          placedItems={placedItems}
+          onRemovePlacedItems={handleRemovePlacedItems}
+        />
       )}
       <ProductUpdateModal
         isOpen={isProductUpdateModalOpen}
