@@ -2,13 +2,27 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import type { SweetItem } from "@/types/types"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // データベースから商品データを取得
+    const { searchParams } = new URL(request.url)
+    const storeId = searchParams.get('storeId')
+
+    if (!storeId) {
+      return new NextResponse(JSON.stringify({ error: "Store ID is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    // データベースから商品データを取得（店舗別在庫情報を含む）
     const products = await prisma.product.findMany({
       include: {
         category: true,
-        stock: true
+        stocks: {
+          where: {
+            storeId: storeId
+          }
+        }
       },
       where: {
         isActive: true
@@ -24,6 +38,9 @@ export async function GET() {
       // アレルギー情報を配列に変換
       const allergies = product.allergyInfo ? product.allergyInfo.split(',').map(a => a.trim()) : []
       
+      // 該当店舗の在庫情報を取得
+      const storeStock = product.stocks.find(stock => stock.storeId === storeId)
+      
       return {
         id: product.id,
         name: product.name,
@@ -37,7 +54,8 @@ export async function GET() {
         allergies,
         calories: product.calories || undefined,
         description: product.description || undefined,
-        inStock: (product.stock?.quantity || 0) > 0,
+        inStock: (storeStock?.quantity || 0) > 0,
+        stockQuantity: storeStock?.quantity || 0,
         // 管理画面で管理されている追加項目
         ingredients: product.ingredients || undefined,
         nutritionInfo: product.nutritionInfo || undefined,

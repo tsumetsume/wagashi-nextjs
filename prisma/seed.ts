@@ -270,23 +270,81 @@ async function main() {
   const existingProducts = await prisma.product.findMany()
   const allProducts = products.length > 0 ? products : existingProducts
 
-  // 在庫の作成
-  for (const product of allProducts) {
+  // 店舗の作成
+  const stores = []
+  const storeData = [
+    {
+      name: '本店',
+      description: 'メインの店舗です',
+      address: '東京都渋谷区神宮前1-1-1',
+      phone: '03-1234-5678'
+    },
+    {
+      name: '新宿店',
+      description: '新宿駅近くの便利な立地',
+      address: '東京都新宿区新宿3-1-1',
+      phone: '03-2345-6789'
+    },
+    {
+      name: '銀座店',
+      description: '高級感あふれる銀座の店舗',
+      address: '東京都中央区銀座4-1-1',
+      phone: '03-3456-7890'
+    }
+  ]
+
+  for (const store of storeData) {
     try {
-      await prisma.stock.upsert({
-        where: { productId: product.id },
+      const createdStore = await prisma.store.upsert({
+        where: { name: store.name },
         update: {},
         create: {
-          productId: product.id,
-          quantity: Math.floor(Math.random() * 50) + 10 // 10-60個のランダム在庫
+          name: store.name,
+          description: store.description,
+          address: store.address,
+          phone: store.phone,
+          isActive: true
         }
       })
+      stores.push(createdStore)
+      console.log(`✅ 店舗を作成しました: ${store.name}`)
     } catch (error) {
-      console.log(`ℹ️ 商品「${product.name}」の在庫は既に存在します`)
+      console.log(`ℹ️ 店舗「${store.name}」は既に存在します`)
+      const existingStore = await prisma.store.findUnique({
+        where: { name: store.name }
+      })
+      if (existingStore) stores.push(existingStore)
     }
   }
 
-  console.log('✅ 在庫を作成しました')
+  // 既存の店舗を取得
+  const existingStores = await prisma.store.findMany()
+  const allStores = stores.length > 0 ? stores : existingStores
+
+  // 店舗別在庫の作成
+  for (const store of allStores) {
+    for (const product of allProducts) {
+      try {
+        await prisma.stock.upsert({
+          where: { 
+            productId_storeId: {
+              productId: product.id,
+              storeId: store.id
+            }
+          },
+          update: {},
+          create: {
+            productId: product.id,
+            storeId: store.id,
+            quantity: Math.floor(Math.random() * 50) + 10 // 10-60個のランダム在庫
+          }
+        })
+      } catch (error) {
+        console.log(`ℹ️ 店舗「${store.name}」の商品「${product.name}」の在庫は既に存在します`)
+      }
+    }
+    console.log(`✅ 店舗「${store.name}」の在庫を作成しました`)
+  }
 
   console.log('🎉 シードデータの投入が完了しました！')
   console.log('📧 管理者ログイン情報:')

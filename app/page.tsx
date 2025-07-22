@@ -1,120 +1,15 @@
 "use client"
 
-import type React from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
-import { useState } from "react"
-import type { InfoDisplaySettings } from "@/components/info-settings-modal"
-import { DndProvider } from "react-dnd"
-import { HTML5Backend } from "react-dnd-html5-backend"
-import type { BoxSize, PlacedItem } from "@/types/types"
-import saveAs from "file-saver"
-import { TutorialProvider } from "@/contexts/tutorial-context"
-import WagashiSimulatorContent from "@/components/wagashi-simulator-content"
-import MaintenanceMode from "@/components/maintenance-mode"
-import { useMaintenanceMode } from "@/hooks/use-maintenance-mode"
+export default function HomePage() {
+  const router = useRouter()
 
-export default function WagashiSimulator() {
-  // メンテナンスモードの状態を取得
-  const { 
-    isMaintenanceMode, 
-    maintenanceMessage, 
-    estimatedEndTime, 
-    isLoading: isMaintenanceLoading,
-    refetch: refetchMaintenanceStatus 
-  } = useMaintenanceMode()
+  useEffect(() => {
+    // メインページにアクセスした場合は店舗選択画面にリダイレクト
+    router.push("/store-selection")
+  }, [router])
 
-  const [boxSize, setBoxSize] = useState<BoxSize>("10x10")
-  const [placedItems, setPlacedItems] = useState<PlacedItem[]>([])
-  const [isHelpOpen, setIsHelpOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-
-  // 商品情報表示設定の初期値
-  const [infoSettings, setInfoSettings] = useState<InfoDisplaySettings>({
-    showName: true,
-    showPrice: true,
-    showSize: true,
-    showImage: true,
-    showCategory: false,
-    showAllergies: true, // Add allergies option with default true
-    showCalories: true, // Add calories option with default true
-    showDescription: true, // Add description option with default true
-    // 管理画面で管理されている追加項目
-    showIngredients: false, // 原材料名（デフォルトは非表示）
-    showNutritionInfo: false, // 栄養成分表示（デフォルトは非表示）
-    showShelfLife: false, // 日持ち（デフォルトは非表示）
-    showStorageMethod: false, // 保存方法（デフォルトは非表示）
-  })
-
-  const handleSaveLayout = () => {
-    const data = JSON.stringify({ boxSize, placedItems, infoSettings }, null, 2)
-    const blob = new Blob([data], { type: "application/json" })
-    saveAs(blob, "wagashi-layout.json")
-  }
-
-  const handleLoadLayout = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target?.result as string)
-        if (data.boxSize && data.placedItems) {
-          setBoxSize(data.boxSize)
-          setPlacedItems(data.placedItems)
-          // 設定も読み込む（存在する場合）
-          if (data.infoSettings) {
-            setInfoSettings(data.infoSettings)
-          }
-        }
-      } catch (error) {
-        console.error("Invalid file format", error)
-      }
-    }
-    reader.readAsText(file)
-  }
-
-  const handleClearLayout = () => {
-    if (confirm("詰め合わせをクリアしますか？")) {
-      setPlacedItems([])
-    }
-  }
-
-  const handleSaveSettings = (newSettings: InfoDisplaySettings) => {
-    setInfoSettings(newSettings)
-  }
-
-  // メンテナンスモードが有効で、読み込み完了後の場合はメンテナンス画面を表示
-  if (!isMaintenanceLoading && isMaintenanceMode) {
-    return (
-      <MaintenanceMode
-        message={maintenanceMessage}
-        estimatedEndTime={estimatedEndTime}
-        onRefresh={refetchMaintenanceStatus}
-      />
-    )
-  }
-
-  // 通常のシミュレーター画面を表示（読み込み中も含む）
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <TutorialProvider>
-        <WagashiSimulatorContent
-          boxSize={boxSize}
-          setBoxSize={setBoxSize}
-          placedItems={placedItems}
-          setPlacedItems={setPlacedItems}
-          isHelpOpen={isHelpOpen}
-          setIsHelpOpen={setIsHelpOpen}
-          isSettingsOpen={isSettingsOpen}
-          setIsSettingsOpen={setIsSettingsOpen}
-          infoSettings={infoSettings}
-          handleSaveLayout={handleSaveLayout}
-          handleLoadLayout={handleLoadLayout}
-          handleClearLayout={handleClearLayout}
-          handleSaveSettings={handleSaveSettings}
-        />
-      </TutorialProvider>
-    </DndProvider>
-  )
+  return null
 }

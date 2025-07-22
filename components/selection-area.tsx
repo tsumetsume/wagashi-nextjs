@@ -15,9 +15,10 @@ interface SelectionAreaProps {
   placedItems: PlacedItem[]
   setPlacedItems: React.Dispatch<React.SetStateAction<PlacedItem[]>>
   inventoryData?: SweetItem[] // 在庫データを受け取るプロパティを追加
+  selectedStoreId: string
 }
 
-export default function SelectionArea({ placedItems, setPlacedItems, inventoryData }: SelectionAreaProps) {
+export default function SelectionArea({ placedItems, setPlacedItems, inventoryData, selectedStoreId }: SelectionAreaProps) {
   const [activeTab, setActiveTab] = useState("餅菓子")
   const [sweets, setSweets] = useState<SweetItem[]>([])
   const [dividers, setDividers] = useState<DividerItem[]>([])
@@ -77,7 +78,14 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
     setError(null)
 
     try {
-      const [sweetsData, dividersData] = await Promise.all([fetchSweets(), fetchDividers()])
+      // 店舗別の商品データを取得
+      const sweetsResponse = await fetch(`/api/sweets?storeId=${selectedStoreId}`)
+      if (!sweetsResponse.ok) {
+        throw new Error('商品データの取得に失敗しました')
+      }
+      const sweetsData = await sweetsResponse.json()
+
+      const dividersData = await fetchDividers()
 
       console.log("APIから取得した商品データ:", sweetsData)
       console.log("商品データの件数:", sweetsData.length)

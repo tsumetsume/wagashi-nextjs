@@ -9,16 +9,24 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
-import { Save, Package, Search } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Save, Package, Search, Store } from 'lucide-react'
 
 interface Category {
   id: string
   name: string
 }
 
+interface Store {
+  id: string
+  name: string
+  isActive: boolean
+}
+
 interface Stock {
   id: string
   productId: string
+  storeId: string
   quantity: number
   product: {
     id: string
@@ -29,11 +37,17 @@ interface Stock {
       name: string
     }
   }
+  store: {
+    id: string
+    name: string
+  }
 }
 
 export default function StockPage() {
   const [stocks, setStocks] = useState<Stock[]>([])
+  const [stores, setStores] = useState<Store[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [selectedStore, setSelectedStore] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -43,29 +57,61 @@ export default function StockPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
   useEffect(() => {
-    fetchData()
+    fetchInitialData()
   }, [])
 
-  const fetchData = async () => {
+  useEffect(() => {
+    if (selectedStore) {
+      fetchStockData()
+    }
+  }, [selectedStore])
+
+  const fetchInitialData = async () => {
     try {
-      const [stocksRes, categoriesRes] = await Promise.all([
-        fetch('/api/admin/stock'),
+      const [storesRes, categoriesRes] = await Promise.all([
+        fetch('/api/admin/stores'),
         fetch('/api/admin/categories')
       ])
       
-      if (!stocksRes.ok || !categoriesRes.ok) {
+      if (!storesRes.ok || !categoriesRes.ok) {
         throw new Error('データの取得に失敗しました')
       }
       
-      const [stocksData, categoriesData] = await Promise.all([
-        stocksRes.json(),
+      const [storesData, categoriesData] = await Promise.all([
+        storesRes.json(),
         categoriesRes.json()
       ])
       
-      setStocks(stocksData)
+      setStores(storesData.filter((store: Store) => store.isActive))
       setCategories(categoriesData)
+      
+      // 最初の店舗を自動選択
+      if (storesData.length > 0) {
+        const firstActiveStore = storesData.find((store: Store) => store.isActive)
+        if (firstActiveStore) {
+          setSelectedStore(firstActiveStore.id)
+        }
+      }
     } catch (error) {
       setError('データの取得に失敗しました')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchStockData = async () => {
+    if (!selectedStore) return
+    
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/admin/stock?storeId=${selectedStore}`)
+      if (!response.ok) {
+        throw new Error('在庫データの取得に失敗しました')
+      }
+      const stocksData = await response.json()
+      setStocks(stocksData)
+    } catch (error) {
+      setError('在庫データの取得に失敗しました')
     } finally {
       setIsLoading(false)
     }
@@ -91,6 +137,7 @@ export default function StockPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId: stock.productId,
+          storeId: stock.storeId,
           quantity: stock.quantity
         })
       })
@@ -162,15 +209,43 @@ export default function StockPage() {
         </Alert>
       )}
 
-      {/* 検索機能 */}
+      {/* 店舗選択と検索機能 */}
       <div className="flex gap-4">
+        <div className="w-64">
+          <Label htmlFor="store-select" className="text-sm font-medium mb-2 block">
+            店舗選択
+          </Label>
+          <Select value={selectedStore} onValueChange={setSelectedStore}>
+            <SelectTrigger>
+              <SelectValue placeholder="店舗を選択してください">
+                {selectedStore && (
+                  <div className="flex items-center gap-2">
+                    <Store className="h-4 w-4" />
+                    {stores.find(store => store.id === selectedStore)?.name}
+                  </div>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {stores.map((store) => (
+                <SelectItem key={store.id} value={store.id}>
+                  <div className="flex items-center gap-2">
+                    <Store className="h-4 w-4" />
+                    {store.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder="商品名、カテゴリーで検索..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 pr-4"
+            className="pl-12 pr-4 mt-6"
+            disabled={!selectedStore}
           />
         </div>
       </div>
@@ -295,7 +370,19 @@ export default function StockPage() {
         ))}
       </Tabs>
 
-      {filteredStocks.length === 0 && (
+      {!selectedStore ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Store className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              店舗を選択してください
+            </h3>
+            <p className="text-gray-600">
+              在庫管理を行う店舗を選択してください。
+            </p>
+          </CardContent>
+        </Card>
+      ) : filteredStocks.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -310,7 +397,7 @@ export default function StockPage() {
             </p>
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   )
 } 

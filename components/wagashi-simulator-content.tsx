@@ -30,6 +30,7 @@ interface WagashiSimulatorContentProps {
   handleLoadLayout: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleClearLayout: () => void
   handleSaveSettings: (newSettings: InfoDisplaySettings) => void
+  selectedStoreId: string
 }
 
 export default function WagashiSimulatorContent({
@@ -46,6 +47,7 @@ export default function WagashiSimulatorContent({
   handleLoadLayout,
   handleClearLayout,
   handleSaveSettings,
+  selectedStoreId,
 }: WagashiSimulatorContentProps) {
   // 在庫管理モーダルの状態
   const [isInventoryOpen, setIsInventoryOpen] = useState(false)
@@ -198,7 +200,12 @@ export default function WagashiSimulatorContent({
           />
         </div>
         <div ref={selectionAreaRef} className="md:h-[calc(100vh-100px)] flex">
-          <SelectionArea placedItems={placedItems} setPlacedItems={setPlacedItems} inventoryData={inventoryData} />
+          <SelectionArea 
+            placedItems={placedItems} 
+            setPlacedItems={setPlacedItems} 
+            inventoryData={inventoryData}
+            selectedStoreId={selectedStoreId}
+          />
         </div>
       </main>
 
