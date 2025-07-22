@@ -54,15 +54,15 @@ export default function ContextMenu({
     >
       <ul className="py-1">
         <li
-          className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group"
+          className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group relative"
           onClick={() => onDelete(item.id)}
         >
           <Trash2 className="h-4 w-4 mr-2 text-[var(--color-red)]" />
           <span>削除</span>
-          <span className="absolute left-0 w-0.5 h-0 bg-[var(--color-red)] group-hover:h-full transition-all duration-200"></span>
+          <span className="absolute left-0 top-0 w-0.5 h-full bg-[var(--color-red)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
         </li>
         <li
-          className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group"
+          className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group relative"
           onClick={() => onToggleLock(item.id)}
         >
           {item.isLocked ? (
@@ -76,36 +76,36 @@ export default function ContextMenu({
               <span>ロック</span>
             </>
           )}
-          <span className="absolute left-0 w-0.5 h-0 bg-[var(--color-indigo)] group-hover:h-full transition-all duration-200"></span>
+          <span className="absolute left-0 top-0 w-0.5 h-full bg-[var(--color-indigo)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
         </li>
         {item.type === "sweet" && (
           <li
-            className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group"
+            className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group relative"
             onClick={() => onRotate(item.id)}
           >
             <RotateCw className="h-4 w-4 mr-2 text-[var(--color-indigo)]" />
             <span>回転</span>
-            <span className="absolute left-0 w-0.5 h-0 bg-[var(--color-indigo)] group-hover:h-full transition-all duration-200"></span>
+            <span className="absolute left-0 top-0 w-0.5 h-full bg-[var(--color-indigo)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
           </li>
         )}
         {item.type === "divider" && onResize && (
           <li
-            className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group"
+            className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group relative"
             onClick={handleResizeClick}
           >
             <ArrowsHorizontal className="h-4 w-4 mr-2 text-[var(--color-indigo)]" />
             <span>長さ調整</span>
-            <span className="absolute left-0 w-0.5 h-0 bg-[var(--color-indigo)] group-hover:h-full transition-all duration-200"></span>
+            <span className="absolute left-0 top-0 w-0.5 h-full bg-[var(--color-indigo)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
           </li>
         )}
         {item.type === "sweet" && (
           <li
-            className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group"
+            className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group relative"
             onClick={handleInfoClick}
           >
             <Info className="h-4 w-4 mr-2 text-[var(--color-indigo)]" />
             <span>商品情報</span>
-            <span className="absolute left-0 w-0.5 h-0 bg-[var(--color-indigo)] group-hover:h-full transition-all duration-200"></span>
+            <span className="absolute left-0 top-0 w-0.5 h-full bg-[var(--color-indigo)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
           </li>
         )}
       </ul>
