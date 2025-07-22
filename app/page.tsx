@@ -10,8 +10,19 @@ import type { BoxSize, PlacedItem } from "@/types/types"
 import saveAs from "file-saver"
 import { TutorialProvider } from "@/contexts/tutorial-context"
 import WagashiSimulatorContent from "@/components/wagashi-simulator-content"
+import MaintenanceMode from "@/components/maintenance-mode"
+import { useMaintenanceMode } from "@/hooks/use-maintenance-mode"
 
 export default function WagashiSimulator() {
+  // メンテナンスモードの状態を取得
+  const { 
+    isMaintenanceMode, 
+    maintenanceMessage, 
+    estimatedEndTime, 
+    isLoading: isMaintenanceLoading,
+    refetch: refetchMaintenanceStatus 
+  } = useMaintenanceMode()
+
   const [boxSize, setBoxSize] = useState<BoxSize>("10x10")
   const [placedItems, setPlacedItems] = useState<PlacedItem[]>([])
   const [isHelpOpen, setIsHelpOpen] = useState(false)
@@ -73,6 +84,18 @@ export default function WagashiSimulator() {
     setInfoSettings(newSettings)
   }
 
+  // メンテナンスモードが有効で、読み込み完了後の場合はメンテナンス画面を表示
+  if (!isMaintenanceLoading && isMaintenanceMode) {
+    return (
+      <MaintenanceMode
+        message={maintenanceMessage}
+        estimatedEndTime={estimatedEndTime}
+        onRefresh={refetchMaintenanceStatus}
+      />
+    )
+  }
+
+  // 通常のシミュレーター画面を表示（読み込み中も含む）
   return (
     <DndProvider backend={HTML5Backend}>
       <TutorialProvider>

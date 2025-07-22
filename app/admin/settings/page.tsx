@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,8 @@ import { useToast } from '@/hooks/use-toast'
 export default function SettingsPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [currentTime, setCurrentTime] = useState('')
+  const [isMounted, setIsMounted] = useState(false)
   
   // 基本設定
   const [siteSettings, setSiteSettings] = useState({
@@ -34,6 +36,40 @@ export default function SettingsPage() {
     contactEmail: 'admin@example.com',
     maintenanceMode: false
   })
+
+  // メンテナンス設定
+  const [maintenanceMessage, setMaintenanceMessage] = useState('システムメンテナンス中です。しばらくお待ちください。')
+  const [estimatedEndTime, setEstimatedEndTime] = useState('')
+
+  // クライアントサイドマウント状態の管理
+  useEffect(() => {
+    setIsMounted(true)
+    setCurrentTime(new Date().toLocaleString('ja-JP'))
+  }, [])
+
+  // 初期データの読み込み
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/admin/settings')
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            setSiteSettings(prev => ({
+              ...prev,
+              maintenanceMode: result.data.maintenanceMode
+            }))
+            setMaintenanceMessage(result.data.maintenanceMessage)
+            setEstimatedEndTime(result.data.estimatedEndTime || '')
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error)
+      }
+    }
+
+    fetchSettings()
+  }, [])
 
   // 通知設定
   const [notificationSettings, setNotificationSettings] = useState({
@@ -53,15 +89,42 @@ export default function SettingsPage() {
   const handleSave = async (section: string) => {
     setIsLoading(true)
     
-    // 実際のAPI呼び出しをシミュレート
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    toast({
-      title: "設定を保存しました",
-      description: `${section}の設定が正常に更新されました。`,
-    })
-    
-    setIsLoading(false)
+    try {
+      if (section === '基本設定') {
+        // メンテナンス設定をAPIに保存
+        const response = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            maintenanceMode: siteSettings.maintenanceMode,
+            maintenanceMessage,
+            estimatedEndTime: estimatedEndTime || null,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to save settings')
+        }
+      } else {
+        // 他の設定の場合は従来通りシミュレート
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+      
+      toast({
+        title: "設定を保存しました",
+        description: `${section}の設定が正常に更新されました。`,
+      })
+    } catch (error) {
+      toast({
+        title: "エラー",
+        description: "設定の保存に失敗しました。",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSiteSettingsChange = (field: string, value: string | boolean) => {
@@ -133,15 +196,45 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="maintenanceMode"
-              checked={siteSettings.maintenanceMode}
-              onCheckedChange={(checked) => handleSiteSettingsChange('maintenanceMode', checked)}
-            />
-            <Label htmlFor="maintenanceMode">メンテナンスモード</Label>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="maintenanceMode"
+                checked={siteSettings.maintenanceMode}
+                onCheckedChange={(checked) => handleSiteSettingsChange('maintenanceMode', checked)}
+              />
+              <Label htmlFor="maintenanceMode">メンテナンスモード</Label>
+              {siteSettings.maintenanceMode && (
+                <Badge variant="destructive">メンテナンス中</Badge>
+              )}
+            </div>
+
             {siteSettings.maintenanceMode && (
-              <Badge variant="destructive">メンテナンス中</Badge>
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                <div className="space-y-2">
+                  <Label htmlFor="maintenanceMessage">メンテナンスメッセージ</Label>
+                  <Textarea
+                    id="maintenanceMessage"
+                    value={maintenanceMessage}
+                    onChange={(e) => setMaintenanceMessage(e.target.value)}
+                    placeholder="ユーザーに表示するメッセージを入力"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="estimatedEndTime">予定終了時刻（任意）</Label>
+                  <Input
+                    id="estimatedEndTime"
+                    type="datetime-local"
+                    value={estimatedEndTime}
+                    onChange={(e) => setEstimatedEndTime(e.target.value)}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    メンテナンス終了予定時刻を設定すると、ユーザーに表示されます
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
@@ -343,7 +436,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label>最終更新</Label>
               <p className="text-sm text-muted-foreground">
-                {new Date().toLocaleString('ja-JP')}
+                {isMounted ? currentTime : '読み込み中...'}
               </p>
             </div>
             <div className="space-y-2">
