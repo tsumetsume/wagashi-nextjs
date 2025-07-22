@@ -180,7 +180,7 @@ export default function TutorialOverlay() {
   }
 
   // コンテキストメニューのダミー関数
-  const handleDummyAction = () => {}
+  const handleDummyAction = () => { }
 
   if (!isActive) return null
 
@@ -317,13 +317,13 @@ export default function TutorialOverlay() {
             "settings",
             "save-load",
             "auto-divider",
+            "print",
             "complete",
           ].map((step) => (
             <div
               key={step}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                step === displayedStep ? "w-4 bg-amber-600" : "w-2 bg-amber-300"
-              }`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${step === displayedStep ? "w-4 bg-amber-600" : "w-2 bg-amber-300"
+                }`}
             />
           ))}
         </div>
