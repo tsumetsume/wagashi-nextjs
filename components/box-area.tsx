@@ -1583,6 +1583,7 @@ export default function BoxArea({
             isNew={newItemIds.has(item.id)}
             cellSize={cellSize}
             onDoubleClick={handleShowItemInfo}
+            checkValidPlacement={checkValidPlacement}
           />
         ))}
       </div>

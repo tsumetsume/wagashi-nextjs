@@ -13,6 +13,7 @@ interface PlacedItemProps {
   isNew?: boolean
   cellSize: number
   onDoubleClick?: (item: PlacedItem) => void
+  checkValidPlacement?: (x: number, y: number, width: number, height: number, excludeId?: string) => boolean
 }
 
 export default function PlacedItemComponent({
@@ -22,6 +23,7 @@ export default function PlacedItemComponent({
   isNew = false,
   cellSize = 40,
   onDoubleClick,
+  checkValidPlacement,
 }: PlacedItemProps) {
   const [isAnimating, setIsAnimating] = useState(isNew)
   const prevPositionRef = useRef({ x: item.x, y: item.y })
@@ -111,6 +113,16 @@ export default function PlacedItemComponent({
         break
       default:
         return
+    }
+
+    // 配置チェック関数が提供されている場合は、移動先が有効かチェック
+    if (checkValidPlacement) {
+      const isValid = checkValidPlacement(newX, newY, item.width, item.height, item.id)
+      if (!isValid) {
+        // 配置NGの場合は移動しない
+        e.preventDefault()
+        return
+      }
     }
 
     setPlacedItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, x: newX, y: newY } : i)))
