@@ -310,7 +310,7 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
   `
   }
 
-  // 和菓子を描画するJavaScriptを生成
+  // 和菓子を描画するJavaScriptを生成（印刷時は商品名のみ表示）
   const generateSweetsJS = () => {
     const sweets = placedItems.filter((item) => item.type === "sweet")
     if (sweets.length === 0) return ""
@@ -327,63 +327,81 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
       ctx.lineWidth = 1;
       ctx.strokeRect(${sweet.x} * cellSize, ${sweet.y} * cellSize, ${sweet.width} * cellSize, ${sweet.height} * cellSize);
       
-      // 和菓子の名前を表示
-      ctx.fillStyle = "#92400E";
-      ctx.font = \`\${cellSize / 3}px sans-serif\`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("${sweet.name}", (${sweet.x} + ${sweet.width} / 2) * cellSize, (${sweet.y} + ${sweet.height} / 2) * cellSize);
-      
-      // 和菓子の画像を読み込み
-      ${
-        sweet.imageUrl
-          ? `
-        (function() {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.src = "${sweet.imageUrl}";
+      // 和菓子の名前を複数行で表示（印刷時は画像なし、商品名のみ）
+      (function() {
+        const text = "${sweet.name}";
+        const maxWidth = ${sweet.width} * cellSize - 8;
+        const maxHeight = ${sweet.height} * cellSize - 8;
+        const baseFontSize = Math.max(8, Math.min(cellSize / 3, 16));
+        
+        ctx.fillStyle = "#92400E";
+        ctx.font = baseFontSize + "px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        
+        // 文字を1文字ずつチェックして行に分割
+        const chars = text.split("");
+        const lines = [];
+        let currentLine = "";
+        
+        for (const char of chars) {
+          const testLine = currentLine + char;
+          const metrics = ctx.measureText(testLine);
           
-          img.onload = function() {
-            // アスペクト比を計算
-            const aspectRatio = img.width / img.height;
-            let drawWidth = ${sweet.width} * cellSize;
-            let drawHeight = ${sweet.height} * cellSize;
+          if (metrics.width > maxWidth && currentLine !== "") {
+            lines.push(currentLine);
+            currentLine = char;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        
+        // 行数が多すぎる場合は文字サイズを小さくして再試行
+        const lineHeight = baseFontSize * 1.2;
+        const totalHeight = lines.length * lineHeight;
+        
+        if (totalHeight > maxHeight && baseFontSize > 8) {
+          // 文字サイズを小さくして再描画
+          const newFontSize = Math.max(8, baseFontSize - 2);
+          ctx.font = newFontSize + "px sans-serif";
+          
+          // 再計算
+          const newLines = [];
+          let newCurrentLine = "";
+          
+          for (const char of chars) {
+            const testLine = newCurrentLine + char;
+            const metrics = ctx.measureText(testLine);
             
-            // アスペクト比を維持
-            if (aspectRatio > 1) {
-              drawHeight = drawWidth / aspectRatio;
+            if (metrics.width > maxWidth && newCurrentLine !== "") {
+              newLines.push(newCurrentLine);
+              newCurrentLine = char;
             } else {
-              drawWidth = drawHeight * aspectRatio;
+              newCurrentLine = testLine;
             }
-            
-            // 中央に配置
-            const offsetX = (${sweet.width} * cellSize - drawWidth) / 2;
-            const offsetY = (${sweet.height} * cellSize - drawHeight) / 2;
-            
-            ctx.save();
-            
-            // 回転がある場合は適用
-            ${
-              sweet.rotation
-                ? `
-              const centerX = (${sweet.x} + ${sweet.width} / 2) * cellSize;
-              const centerY = (${sweet.y} + ${sweet.height} / 2) * cellSize;
-              
-              ctx.translate(centerX, centerY);
-              ctx.rotate((${sweet.rotation} * Math.PI) / 180);
-              ctx.translate(-centerX, -centerY);
-            `
-                : ""
-            }
-            
-            ctx.drawImage(img, ${sweet.x} * cellSize + offsetX, ${sweet.y} * cellSize + offsetY, drawWidth, drawHeight);
-            
-            ctx.restore();
-          };
-        })();
-      `
-          : ""
-      }
+          }
+          
+          if (newCurrentLine) {
+            newLines.push(newCurrentLine);
+          }
+          
+          lines.length = 0;
+          lines.push(...newLines);
+        }
+        
+        // 各行を描画
+        const centerX = (${sweet.x} + ${sweet.width} / 2) * cellSize;
+        const centerY = (${sweet.y} + ${sweet.height} / 2) * cellSize;
+        const startY = centerY - (lines.length * lineHeight / 2) + (lineHeight / 2);
+        
+        lines.forEach((line, index) => {
+          ctx.fillText(line, centerX, startY + index * lineHeight);
+        });
+      })();
     `,
       )
       .join("\n")

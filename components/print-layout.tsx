@@ -153,7 +153,7 @@ export default function PrintLayout({
     })
   }
 
-  // 和菓子の描画（画像の読み込みを待つ）
+  // 和菓子の描画
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -161,9 +161,6 @@ export default function PrintLayout({
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // 読み込む画像の総数
-    const totalImages = sweetItems.length
-    let loadedImages = 0
     let hasStartedDrawing = false
 
     // すべての和菓子を描画
@@ -182,7 +179,7 @@ export default function PrintLayout({
         ctx.lineWidth = 1
         ctx.strokeRect(sweet.x * cellSize, sweet.y * cellSize, sweet.width * cellSize, sweet.height * cellSize)
 
-        // 和菓子の名前を複数行で表示（画像が読み込まれるまで）
+        // 和菓子の名前を複数行で表示
         ctx.fillStyle = "#92400E"
         const textMaxWidth = sweet.width * cellSize - 8 // パディングを考慮
         const textMaxHeight = sweet.height * cellSize - 8 // パディングを考慮
@@ -213,100 +210,105 @@ export default function PrintLayout({
       setIsCanvasReady(true)
     }
 
-    // 画像がない場合や少ない場合は早めに描画開始
-    if (totalImages === 0) {
-      drawAllSweets()
-      return
-    }
+    // プレビュー時は画像も表示、印刷時は商品名のみ表示
+    if (isPrintPreview) {
+      // プレビュー時：画像の読み込みを待つ
+      const totalImages = sweetItems.filter(item => item.imageUrl).length
+      let loadedImages = 0
 
-    // 各和菓子の画像を読み込んで描画
-    sweetItems.forEach((sweet) => {
-      if (!sweet.imageUrl) {
-        loadedImages++
-        if (loadedImages >= totalImages) {
-          drawAllSweets()
-        }
+      if (totalImages === 0) {
+        drawAllSweets()
         return
       }
 
-      const img = new Image()
-      img.crossOrigin = "anonymous" // CORS対策
-      img.src = sweet.imageUrl
-
-      img.onload = () => {
-        ctx.save()
-
-        // クリッピング領域を設定（商品枠内に画像を制限）
-        ctx.beginPath()
-        ctx.rect(sweet.x * cellSize, sweet.y * cellSize, sweet.width * cellSize, sweet.height * cellSize)
-        ctx.clip()
-
-        // 回転がある場合は適用
-        if (sweet.rotation) {
-          const centerX = (sweet.x + sweet.width / 2) * cellSize
-          const centerY = (sweet.y + sweet.height / 2) * cellSize
-
-          ctx.translate(centerX, centerY)
-          ctx.rotate((sweet.rotation * Math.PI) / 180)
-          ctx.translate(-centerX, -centerY)
+      // 各和菓子の画像を読み込んで描画
+      sweetItems.forEach((sweet) => {
+        if (!sweet.imageUrl) {
+          return
         }
 
-        // 画像をセルサイズに合わせて描画
-        const aspectRatio = img.width / img.height
-        const cellWidth = sweet.width * cellSize
-        const cellHeight = sweet.height * cellSize
-        
-        let drawWidth = cellWidth
-        let drawHeight = cellHeight
+        const img = new Image()
+        img.crossOrigin = "anonymous" // CORS対策
+        img.src = sweet.imageUrl
 
-        // アスペクト比を維持しつつ、セル内に収まるようにサイズ調整
-        if (aspectRatio > cellWidth / cellHeight) {
-          // 横長の画像の場合、幅を基準にする
-          drawHeight = drawWidth / aspectRatio
-        } else {
-          // 縦長の画像の場合、高さを基準にする
-          drawWidth = drawHeight * aspectRatio
+        img.onload = () => {
+          ctx.save()
+
+          // クリッピング領域を設定（商品枠内に画像を制限）
+          ctx.beginPath()
+          ctx.rect(sweet.x * cellSize, sweet.y * cellSize, sweet.width * cellSize, sweet.height * cellSize)
+          ctx.clip()
+
+          // 回転がある場合は適用
+          if (sweet.rotation) {
+            const centerX = (sweet.x + sweet.width / 2) * cellSize
+            const centerY = (sweet.y + sweet.height / 2) * cellSize
+
+            ctx.translate(centerX, centerY)
+            ctx.rotate((sweet.rotation * Math.PI) / 180)
+            ctx.translate(-centerX, -centerY)
+          }
+
+          // 画像をセルサイズに合わせて描画
+          const aspectRatio = img.width / img.height
+          const cellWidth = sweet.width * cellSize
+          const cellHeight = sweet.height * cellSize
+          
+          let drawWidth = cellWidth
+          let drawHeight = cellHeight
+
+          // アスペクト比を維持しつつ、セル内に収まるようにサイズ調整
+          if (aspectRatio > cellWidth / cellHeight) {
+            // 横長の画像の場合、幅を基準にする
+            drawHeight = drawWidth / aspectRatio
+          } else {
+            // 縦長の画像の場合、高さを基準にする
+            drawWidth = drawHeight * aspectRatio
+          }
+
+          // 中央に配置
+          const offsetX = (cellWidth - drawWidth) / 2
+          const offsetY = (cellHeight - drawHeight) / 2
+
+          ctx.drawImage(
+            img, 
+            sweet.x * cellSize + offsetX, 
+            sweet.y * cellSize + offsetY, 
+            drawWidth, 
+            drawHeight
+          )
+
+          ctx.restore()
+
+          // 読み込んだ画像をカウント
+          loadedImages++
+          if (loadedImages >= totalImages) {
+            drawAllSweets()
+          }
         }
 
-        // 中央に配置
-        const offsetX = (cellWidth - drawWidth) / 2
-        const offsetY = (cellHeight - drawHeight) / 2
+        img.onerror = () => {
+          // 画像の読み込みに失敗した場合もカウント
+          loadedImages++
+          if (loadedImages >= totalImages) {
+            drawAllSweets()
+          }
+        }
+      })
 
-        ctx.drawImage(
-          img, 
-          sweet.x * cellSize + offsetX, 
-          sweet.y * cellSize + offsetY, 
-          drawWidth, 
-          drawHeight
-        )
-
-        ctx.restore()
-
-        // 読み込んだ画像をカウント
-        loadedImages++
-        if (loadedImages >= totalImages) {
+      // 一定時間後に強制的に描画開始（画像読み込みのタイムアウト）
+      const timeoutId = setTimeout(() => {
+        if (!hasStartedDrawing) {
           drawAllSweets()
         }
-      }
+      }, 2000)
 
-      img.onerror = () => {
-        // 画像の読み込みに失敗した場合もカウント
-        loadedImages++
-        if (loadedImages >= totalImages) {
-          drawAllSweets()
-        }
-      }
-    })
-
-    // 一定時間後に強制的に描画開始（画像読み込みのタイムアウト）
-    const timeoutId = setTimeout(() => {
-      if (!hasStartedDrawing) {
-        drawAllSweets()
-      }
-    }, 2000)
-
-    return () => clearTimeout(timeoutId)
-  }, [sweetItems, dividerItems, cellSize])
+      return () => clearTimeout(timeoutId)
+    } else {
+      // 印刷時：商品名のみ表示（画像は読み込まない）
+      drawAllSweets()
+    }
+  }, [sweetItems, dividerItems, cellSize, isPrintPreview])
 
   // アレルギー情報を取得する関数
   const getAllergies = (itemId: string): string[] => {
