@@ -14,9 +14,10 @@ interface InventorySettingsModalProps {
   onUpdateInventory: (updatedSweets: SweetItem[]) => void
   placedItems?: PlacedItem[]
   onRemovePlacedItems?: (itemIds: string[]) => void
+  selectedStoreId: string
 }
 
-export default function InventorySettingsModal({ onClose, onUpdateInventory, placedItems, onRemovePlacedItems }: InventorySettingsModalProps) {
+export default function InventorySettingsModal({ onClose, onUpdateInventory, placedItems, onRemovePlacedItems, selectedStoreId }: InventorySettingsModalProps) {
   const [localSweets, setLocalSweets] = useState<SweetItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("すべて")
@@ -26,14 +27,14 @@ export default function InventorySettingsModal({ onClose, onUpdateInventory, pla
   useEffect(() => {
     const loadSweets = async () => {
       try {
-        const sweets = await fetchSweets()
+        const sweets = await fetchSweets(selectedStoreId)
         setLocalSweets(sweets)
       } catch (error) {
         console.error("Failed to fetch sweets:", error)
       }
     }
     loadSweets()
-  }, [])
+  }, [selectedStoreId])
 
   // カテゴリーの一覧を取得
   const categories = ["すべて", ...Array.from(new Set(localSweets.map((sweet) => sweet.category)))]

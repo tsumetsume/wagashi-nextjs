@@ -4,9 +4,13 @@ import type { SweetItem, DividerItem } from "@/types/types"
 const API_BASE_URL = "/api"
 
 // 和菓子データを取得する関数
-export async function fetchSweets(): Promise<SweetItem[]> {
+export async function fetchSweets(storeId?: string): Promise<SweetItem[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/sweets`)
+    const url = storeId 
+      ? `${API_BASE_URL}/sweets?storeId=${encodeURIComponent(storeId)}`
+      : `${API_BASE_URL}/sweets`
+    
+    const response = await fetch(url)
     if (!response.ok) {
       console.error(`API returned status: ${response.status}.`)
       throw new Error(`API returned status: ${response.status}`)

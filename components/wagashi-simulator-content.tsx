@@ -197,6 +197,7 @@ export default function WagashiSimulatorContent({
             productInfoRef={productInfoRef}
             autoDividerRef={autoDividerRef}
             printRef={printRef}
+            selectedStoreId={selectedStoreId}
           />
         </div>
         <div ref={selectionAreaRef} className="md:h-[calc(100vh-100px)] flex">
@@ -223,6 +224,7 @@ export default function WagashiSimulatorContent({
           onUpdateInventory={handleUpdateInventory}
           placedItems={placedItems}
           onRemovePlacedItems={handleRemovePlacedItems}
+          selectedStoreId={selectedStoreId}
         />
       )}
       <ProductUpdateModal

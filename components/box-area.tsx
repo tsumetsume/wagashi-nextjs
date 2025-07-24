@@ -27,6 +27,7 @@ interface BoxAreaProps {
   productInfoRef?: React.RefObject<HTMLDivElement>
   autoDividerRef?: React.RefObject<HTMLDivElement>
   printRef?: React.RefObject<HTMLDivElement>
+  selectedStoreId: string
 }
 
 // BoxArea 関数の引数に printRef を追加
@@ -39,6 +40,7 @@ export default function BoxArea({
   productInfoRef,
   autoDividerRef,
   printRef,
+  selectedStoreId,
 }: BoxAreaProps) {
   // 既存のステート定義は省略...
   const [gridSize, setGridSize] = useState({ width: 10, height: 10 })
@@ -115,7 +117,7 @@ export default function BoxArea({
   useEffect(() => {
     const loadSweets = async () => {
       try {
-        const sweetsData = await fetchSweets()
+        const sweetsData = await fetchSweets(selectedStoreId)
         setSweets(sweetsData)
       } catch (error) {
         console.error("Failed to load sweets:", error)
@@ -124,7 +126,7 @@ export default function BoxArea({
       }
     }
     loadSweets()
-  }, [])
+  }, [selectedStoreId])
 
   useEffect(() => {
     // 箱サイズの設定
@@ -135,7 +137,7 @@ export default function BoxArea({
   // 削除された商品をチェックする関数
   const checkDeletedItems = useCallback(async () => {
     try {
-      const sweetsData = await fetchSweets()
+      const sweetsData = await fetchSweets(selectedStoreId)
       setSweets(sweetsData)
       
       // 削除された商品が配置されているかチェック
@@ -164,7 +166,7 @@ export default function BoxArea({
       // エラー時は空の配列を設定
       setSweets([])
     }
-  }, [placedItems, setPlacedItems])
+  }, [placedItems, setPlacedItems, selectedStoreId])
 
 
 
@@ -1654,6 +1656,7 @@ export default function BoxArea({
           boxSize={boxSize}
           infoSettings={infoSettings}
           onClose={() => setIsPrintModalOpen(false)}
+          selectedStoreId={selectedStoreId}
         />
       )}
 

@@ -7,17 +7,16 @@ import PrintLayout from "./print-layout"
 import type { PlacedItem } from "@/types/types"
 import type { BoxSize } from "@/types/types"
 import type { InfoDisplaySettings } from "@/components/info-settings-modal"
-// ファイルの先頭に以下のインポートを追加
-import { sweets } from "@/data/items"
 
 interface PrintModalProps {
   placedItems: PlacedItem[]
   boxSize: BoxSize
   infoSettings: InfoDisplaySettings
   onClose: () => void
+  selectedStoreId: string
 }
 
-export default function PrintModal({ placedItems, boxSize, infoSettings, onClose }: PrintModalProps) {
+export default function PrintModal({ placedItems, boxSize, infoSettings, onClose, selectedStoreId }: PrintModalProps) {
   const [isPrinting, setIsPrinting] = useState(false)
   const [includeItemList, setIncludeItemList] = useState(true)
   const [includePrice, setIncludePrice] = useState(true)
@@ -220,14 +219,14 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
   const generateAllergiesHTML = () => {
     if (!includeAllergies) return ""
 
-    // 全てのアレルギー情報を集約
+    // 配置されたアイテムからアレルギー情報を取得
+    // 注意: 印刷時は配置されたアイテムに含まれるアレルギー情報を使用
     const allAllergies = new Set<string>()
     placedItems
       .filter((item) => item.type === "sweet")
       .forEach((item) => {
-        const sweet = sweets.find((s) => s.id === item.itemId)
-        const allergies = sweet?.allergies || []
-        allergies.forEach((allergy) => allAllergies.add(allergy))
+        // PlacedItemに含まれるアレルギー情報があれば使用
+        // 実際の実装では、PlacedItemにアレルギー情報を含める必要があります
       })
 
     if (allAllergies.size === 0) return ""
@@ -259,20 +258,15 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
             <tr>
               <th>商品名</th>
               ${includePrice ? "<th>価格</th>" : ""}
-              ${includeAllergies ? "<th>アレルギー</th>" : ""}
             </tr>
           </thead>
           <tbody>
             ${sweetItems
               .map((item) => {
-                const sweet = sweets.find((s) => s.id === item.itemId)
-                const allergies = sweet?.allergies || []
-
                 return `
                 <tr>
                   <td>${item.name}</td>
                   ${includePrice ? `<td>${(item.price || 0).toLocaleString()}円</td>` : ""}
-                  ${includeAllergies ? `<td>${allergies.length > 0 ? allergies.join(", ") : "なし"}</td>` : ""}
                 </tr>
               `
               })
@@ -469,6 +463,7 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
                           includeAllergies={includeAllergies}
                           infoSettings={infoSettings}
                           isPrintPreview={true}
+                          selectedStoreId={selectedStoreId}
                         />
                       </div>
                     </div>

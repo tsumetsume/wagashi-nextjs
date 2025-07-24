@@ -15,6 +15,7 @@ interface PrintLayoutProps {
   includeAllergies: boolean
   infoSettings: InfoDisplaySettings
   isPrintPreview: boolean
+  selectedStoreId: string
 }
 
 export default function PrintLayout({
@@ -26,6 +27,7 @@ export default function PrintLayout({
   includeAllergies,
   infoSettings,
   isPrintPreview,
+  selectedStoreId,
 }: PrintLayoutProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [width, height] = boxSize.split("x").map(Number)
@@ -45,7 +47,7 @@ export default function PrintLayout({
   useEffect(() => {
     const loadSweets = async () => {
       try {
-        const sweetsData = await fetchSweets()
+        const sweetsData = await fetchSweets(selectedStoreId)
         setSweets(sweetsData)
       } catch (error) {
         console.error("Failed to load sweets for print:", error)
@@ -53,7 +55,7 @@ export default function PrintLayout({
       }
     }
     loadSweets()
-  }, [])
+  }, [selectedStoreId])
 
   // キャンバスの初期化と背景・グリッド線の描画
   useEffect(() => {
