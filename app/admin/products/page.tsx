@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -36,12 +37,15 @@ interface Product {
   storageMethod?: string
   isActive: boolean
   category: Category
-  stock?: {
+  stocks?: {
+    id: string
     quantity: number
-  }
+    storeId: string
+  }[]
 }
 
 export default function ProductsPage() {
+  const { data: session, status } = useSession()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -79,8 +83,14 @@ export default function ProductsPage() {
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([])
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (status === 'authenticated') {
+      fetchData()
+    } else if (status === 'unauthenticated') {
+      setError('認証が必要です。ログインしてください。')
+      setIsLoading(false)
+    }
+    // status が 'loading' の場合は何もしない（読み込み中のまま）
+  }, [status])
 
   const fetchData = async () => {
     try {
@@ -89,8 +99,14 @@ export default function ProductsPage() {
         fetch('/api/admin/categories')
       ])
       
-      if (!productsRes.ok || !categoriesRes.ok) {
-        throw new Error('データの取得に失敗しました')
+      if (!productsRes.ok) {
+        const errorData = await productsRes.json()
+        throw new Error(`商品データの取得に失敗しました: ${errorData.error || productsRes.statusText}`)
+      }
+      
+      if (!categoriesRes.ok) {
+        const errorData = await categoriesRes.json()
+        throw new Error(`カテゴリーデータの取得に失敗しました: ${errorData.error || categoriesRes.statusText}`)
       }
       
       const [productsData, categoriesData] = await Promise.all([
@@ -100,8 +116,10 @@ export default function ProductsPage() {
       
       setProducts(productsData)
       setCategories(categoriesData)
+      setError('') // エラーをクリア
     } catch (error) {
-      setError('データの取得に失敗しました')
+      console.error('データ取得エラー:', error)
+      setError(error instanceof Error ? error.message : 'データの取得に失敗しました')
     } finally {
       setIsLoading(false)
     }
@@ -256,8 +274,20 @@ export default function ProductsPage() {
     return acc
   }, {} as Record<string, Product[]>)
 
-  if (isLoading) {
+  if (status === 'loading' || isLoading) {
     return <div className="flex justify-center p-8">読み込み中...</div>
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Alert variant="destructive">
+          <AlertDescription>
+            認証が必要です。ログインしてください。
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   return (

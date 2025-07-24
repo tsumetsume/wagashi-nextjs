@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Noto_Sans_JP, Noto_Serif_JP } from "next/font/google"
+import { Providers } from "@/components/providers"
 import "./globals.css"
 
 // Noto Sans JPフォントの設定
@@ -39,7 +40,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`${notoSansJP.variable} ${notoSerifJP.variable} ${inter.variable}`}>
-      <body className="washi-bg">{children}</body>
+      <body className="washi-bg">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }

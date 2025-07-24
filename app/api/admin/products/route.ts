@@ -8,19 +8,24 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
+      console.error('認証エラー: セッションが見つかりません')
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
+
+    console.log('認証成功:', session.user?.email)
 
     const products = await prisma.product.findMany({
       include: {
         category: true,
-        stock: true
+        stocks: true
       },
       orderBy: { createdAt: 'desc' }
     })
 
+    console.log(`商品データ取得成功: ${products.length}件`)
     return NextResponse.json(products)
   } catch (error) {
+    console.error('商品取得エラー:', error)
     return NextResponse.json({ error: '商品の取得に失敗しました' }, { status: 500 })
   }
 }
