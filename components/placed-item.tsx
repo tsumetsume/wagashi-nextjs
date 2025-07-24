@@ -76,7 +76,6 @@ export default function PlacedItemComponent({
           type: "placedItem",
           width: item.width,
           height: item.height,
-          rotation: item.rotation, // 回転情報を追加
           isGridLine: item.isGridLine,
           orientation: item.orientation,
           offsetX,
@@ -88,7 +87,7 @@ export default function PlacedItemComponent({
         isDragging: !!monitor.isDragging(),
       }),
     }),
-    [item.id, item.width, item.height, item.isLocked, item.isGridLine, item.orientation, item.rotation], // 依存配列に rotation を追加
+    [item.id, item.width, item.height, item.isLocked, item.isGridLine, item.orientation], // 依存配列
   )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -206,8 +205,6 @@ export default function PlacedItemComponent({
         top: item.y * cellSize,
         width: item.width * cellSize,
         height: item.height * cellSize,
-        transform: `rotate(${item.rotation}deg)`,
-        transformOrigin: "center center", // これを修正: "center" から "center center" に
         zIndex: item.type === "divider" ? 25 : 20, // 仕切りのzIndexを和菓子よりも高く設定
       }}
       onContextMenu={onContextMenu}

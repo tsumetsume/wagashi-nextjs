@@ -139,7 +139,7 @@ export default function BoxArea({
     try {
       const sweetsData = await fetchSweets(selectedStoreId)
       setSweets(sweetsData)
-      
+
       // 削除された商品が配置されているかチェック
       const deletedItems = placedItems.filter(placedItem => {
         if (placedItem.type === 'sweet') {
@@ -147,13 +147,13 @@ export default function BoxArea({
         }
         return false
       })
-      
+
       if (deletedItems.length > 0) {
         // 削除された商品を配置済みアイテムから削除
-        setPlacedItems(prev => prev.filter(item => 
+        setPlacedItems(prev => prev.filter(item =>
           !deletedItems.some(deleted => deleted.id === item.id)
         ))
-        
+
         // エラーモーダルで削除された商品を通知
         setErrorModal({
           visible: true,
@@ -177,13 +177,15 @@ export default function BoxArea({
         item:
           | DragItem
           | {
-              id: string
-              type: "placedItem"
-              isGridLine?: boolean
-              orientation?: string
-              offsetX?: number
-              offsetY?: number
-            },
+            id: string
+            type: "placedItem"
+            width?: number
+            height?: number
+            isGridLine?: boolean
+            orientation?: string
+            offsetX?: number
+            offsetY?: number
+          },
         monitor,
       ) => {
         const boxRect = boxRef.current?.getBoundingClientRect()
@@ -374,17 +376,18 @@ export default function BoxArea({
         // 通常のアイテム（和菓子または従来の仕切り）の場合
         // placedItemの場合
         if ("type" in item && item.type === "placedItem") {
-          const draggedItem = placedItems.find((i) => i.id === item.id)
-          if (!draggedItem) return
+          // ドラッグ開始時の幅と高さを使用（回転後の値）
+          const itemWidth = "width" in item ? item.width : 1
+          const itemHeight = "height" in item ? item.height : 1
 
           // 配置可能かチェック
-          const isValid = checkValidPlacement(x, y, draggedItem.width, draggedItem.height, item.id)
+          const isValid = checkValidPlacement(x, y, itemWidth, itemHeight, item.id)
 
           setPreviewPosition({
             x,
             y,
-            width: draggedItem.width,
-            height: draggedItem.height,
+            width: itemWidth,
+            height: itemHeight,
             isValid,
             visible: true,
           })
@@ -410,13 +413,15 @@ export default function BoxArea({
         item:
           | DragItem
           | {
-              id: string
-              type: "placedItem"
-              isGridLine?: boolean
-              orientation?: string
-              offsetX?: number
-              offsetY?: number
-            },
+            id: string
+            type: "placedItem"
+            width?: number
+            height?: number
+            isGridLine?: boolean
+            orientation?: string
+            offsetX?: number
+            offsetY?: number
+          },
         monitor,
       ) => {
         const boxRect = boxRef.current?.getBoundingClientRect()
@@ -573,11 +578,12 @@ export default function BoxArea({
         // 通常のアイテム（和菓子）の場合
         // placedItem の場合は移動処理
         if ("type" in item && item.type === "placedItem") {
-          const draggedItem = placedItems.find((i) => i.id === item.id)
-          if (!draggedItem) return
+          // ドラッグ開始時の幅と高さを使用（回転後の値）
+          const itemWidth = "width" in item ? item.width : 1
+          const itemHeight = "height" in item ? item.height : 1
 
           // 配置可能かチェック（回転も考慮）
-          if (!checkValidPlacement(x, y, draggedItem.width, draggedItem.height, item.id)) {
+          if (!checkValidPlacement(x, y, itemWidth, itemHeight, item.id)) {
             return
           }
 
@@ -1059,13 +1065,9 @@ export default function BoxArea({
     setPlacedItems((prev) =>
       prev.map((item) => {
         if (item.id === id && item.type === "sweet") {
-          // 回転角度を更新（90度ずつ回転）
-          const newRotation = ((item.rotation + 90) % 360) as 0 | 90 | 180 | 270
-
-          // 回転が90度または270度の場合は幅と高さを入れ替え
-          const shouldSwap = newRotation === 90 || newRotation === 270
-          const newWidth = shouldSwap ? item.height : item.width
-          const newHeight = shouldSwap ? item.width : item.height
+          // 幅と高さを入れ替えて回転を表現
+          const newWidth = item.height
+          const newHeight = item.width
 
           // グリッド範囲外にはみ出さないか確認
           if (item.x + newWidth > gridSize.width || item.y + newHeight > gridSize.height) {
@@ -1112,10 +1114,9 @@ export default function BoxArea({
             return item
           }
 
-          // 全てのチェックをパスしたら回転を適用
+          // 全てのチェックをパスしたら回転を適用（幅と高さを入れ替え）
           return {
             ...item,
-            rotation: 0,//newRotation,  回転させるとずれる
             width: newWidth,
             height: newHeight,
           }
@@ -1504,9 +1505,8 @@ export default function BoxArea({
           boxRef.current = node
           drop(node)
         }}
-        className={`relative border-4 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${
-          isOver && canDrop ? "drag-over" : ""
-        } rounded-sm shadow-md`}
+        className={`relative border-4 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
+          } rounded-sm shadow-md`}
         style={{
           width: gridSize.width * cellSize + 8, // 右側の枠線のために8px追加（border-4の両側で8px）
           height: gridSize.height * cellSize + 8, // 下側の枠線のために8px追加（border-4の両側で8px）
@@ -1538,38 +1538,37 @@ export default function BoxArea({
         {/* 配置プレビュー */}
         {previewPosition.visible && (
           <div
-            className={`absolute pointer-events-none border-2 ${
-              previewPosition.isValid
-                ? previewPosition.isSnapped
-                  ? "border-[var(--color-gold)] bg-[var(--color-beige)]/70" // スナップ時のスタイル
-                  : "border-[var(--color-green)] bg-[var(--color-beige-dark)]/50" // 通常の有効時のスタイル
-                : "border-[var(--color-red)] bg-[var(--color-beige-dark)]/50" // 無効時のスタイル
-            }`}
+            className={`absolute pointer-events-none border-2 ${previewPosition.isValid
+              ? previewPosition.isSnapped
+                ? "border-[var(--color-gold)] bg-[var(--color-beige)]/70" // スナップ時のスタイル
+                : "border-[var(--color-green)] bg-[var(--color-beige-dark)]/50" // 通常の有効時のスタイル
+              : "border-[var(--color-red)] bg-[var(--color-beige-dark)]/50" // 無効時のスタイル
+              }`}
             style={
               previewPosition.isGridLine
                 ? {
-                    left:
-                      previewPosition.orientation === "vertical"
-                        ? previewPosition.x * cellSize - 2
-                        : previewPosition.x * cellSize,
-                    top:
-                      previewPosition.orientation === "horizontal"
-                        ? previewPosition.y * cellSize - 2
-                        : previewPosition.y * cellSize,
-                    width: previewPosition.orientation === "vertical" ? 4 : previewPosition.width * cellSize,
-                    height: previewPosition.orientation === "horizontal" ? 4 : previewPosition.height * cellSize,
-                    zIndex: 30,
-                    // スナップ時のアニメーション効果
-                    boxShadow: previewPosition.isSnapped ? "0 0 8px rgba(191, 155, 48, 0.7)" : "none",
-                    transition: "box-shadow 0.2s ease",
-                  }
+                  left:
+                    previewPosition.orientation === "vertical"
+                      ? previewPosition.x * cellSize - 2
+                      : previewPosition.x * cellSize,
+                  top:
+                    previewPosition.orientation === "horizontal"
+                      ? previewPosition.y * cellSize - 2
+                      : previewPosition.y * cellSize,
+                  width: previewPosition.orientation === "vertical" ? 4 : previewPosition.width * cellSize,
+                  height: previewPosition.orientation === "horizontal" ? 4 : previewPosition.height * cellSize,
+                  zIndex: 30,
+                  // スナップ時のアニメーション効果
+                  boxShadow: previewPosition.isSnapped ? "0 0 8px rgba(191, 155, 48, 0.7)" : "none",
+                  transition: "box-shadow 0.2s ease",
+                }
                 : {
-                    left: previewPosition.x * cellSize,
-                    top: previewPosition.y * cellSize,
-                    width: previewPosition.width * cellSize,
-                    height: previewPosition.height * cellSize,
-                    zIndex: 30,
-                  }
+                  left: previewPosition.x * cellSize,
+                  top: previewPosition.y * cellSize,
+                  width: previewPosition.width * cellSize,
+                  height: previewPosition.height * cellSize,
+                  zIndex: 30,
+                }
             }
           />
         )}
