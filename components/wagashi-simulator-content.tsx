@@ -66,6 +66,7 @@ export default function WagashiSimulatorContent({
   const productInfoRef = useTutorialTarget("product-info")
   const settingsRef = useTutorialTarget("settings")
   const saveLoadRef = useTutorialTarget("save-load")
+  const customerCodeSaveRef = useTutorialTarget("customer-code-save")
   const autoDividerRef = useTutorialTarget("auto-divider")
   const printRef = useTutorialTarget("print")
 
@@ -161,6 +162,7 @@ export default function WagashiSimulatorContent({
                 size="sm"
                 className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
                 onClick={handleSaveWithCustomerCode}
+                ref={customerCodeSaveRef as unknown as React.RefObject<HTMLButtonElement>}
               >
                 <Cloud className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">カスタマーコード保存</span>

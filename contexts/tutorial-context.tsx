@@ -13,6 +13,7 @@ export type TutorialStep =
   | "product-info"
   | "settings"
   | "save-load"
+  | "customer-code-save"
   | "auto-divider"
   | "print"
   | "complete"
@@ -54,6 +55,7 @@ const tutorialSteps: TutorialStep[] = [
   "product-info",
   "settings",
   "save-load",
+  "customer-code-save",
   "auto-divider",
   "print",
   "complete",

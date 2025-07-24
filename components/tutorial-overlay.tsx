@@ -139,6 +139,7 @@ export default function TutorialOverlay() {
       "product-info",
       "settings",
       "save-load",
+      "customer-code-save",
       "auto-divider",
       "print",
       "complete",
@@ -316,6 +317,7 @@ export default function TutorialOverlay() {
             "product-info",
             "settings",
             "save-load",
+            "customer-code-save",
             "auto-divider",
             "print",
             "complete",
@@ -388,6 +390,13 @@ function getTutorialContent(step: TutorialStep) {
         title: "保存と読み込み",
         content:
           "作成した詰め合わせは「保存」ボタンでJSONファイルとして保存できます。「読込」ボタンで以前の作業を復元できます。",
+        hasTarget: true,
+      }
+    case "customer-code-save":
+      return {
+        title: "カスタマーコード保存",
+        content:
+          "「カスタマーコード保存」ボタンをクリックすると、作成した詰め合わせがデータベースに保存され、8文字のカスタマーコードが生成されます。このコードを使って、自宅で作成したレイアウトを店舗で復元できます。",
         hasTarget: true,
       }
     case "auto-divider":
