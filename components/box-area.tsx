@@ -635,7 +635,7 @@ export default function BoxArea({
         canDrop: !!monitor.canDrop(),
       }),
     }),
-    [placedItems, gridSize, newItemIds, previewPosition.isSnapped],
+    [gridSize, newItemIds, previewPosition.isSnapped],
   )
 
   // ドラッグが終了したらプレビューを非表示にする
