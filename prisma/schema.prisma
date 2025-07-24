@@ -70,7 +70,8 @@ model Store {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  stocks Stock[]
+  stocks       Stock[]
+  savedLayouts SavedLayout[]
 
   @@map("stores")
 }
@@ -88,4 +89,21 @@ model Stock {
 
   @@unique([productId, storeId])
   @@map("stocks")
+}
+
+model SavedLayout {
+  id           String   @id @default(cuid())
+  customerCode String   @unique
+  storeId      String
+  storeName    String
+  boxSize      String
+  layoutData   Json     // 配置データ（placedItems）
+  infoSettings Json     // 表示設定
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  expiresAt    DateTime // 有効期限（30日後など）
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@map("saved_layouts")
 } 

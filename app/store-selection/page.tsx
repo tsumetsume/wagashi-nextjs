@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, Store, MapPin, Phone } from "lucide-react"
+import { Loader2, Store, MapPin, Phone, Download } from "lucide-react"
 
 interface Store {
   id: string
@@ -76,9 +76,20 @@ export default function StoreSelectionPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             和菓子詰め合わせシミュレーター
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             ご利用になる店舗を選択してください
           </p>
+          
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/customer-code")}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              カスタマーコードで復元
+            </Button>
+          </div>
         </div>
 
         {stores.length === 0 ? (

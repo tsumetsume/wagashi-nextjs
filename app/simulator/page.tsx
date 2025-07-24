@@ -12,8 +12,10 @@ import { TutorialProvider } from "@/contexts/tutorial-context"
 import WagashiSimulatorContent from "@/components/wagashi-simulator-content"
 import MaintenanceMode from "@/components/maintenance-mode"
 import { useMaintenanceMode } from "@/hooks/use-maintenance-mode"
+import CustomerCodeModal from "@/components/customer-code-modal"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Store } from "lucide-react"
+import { toast } from "sonner"
 
 export default function WagashiSimulator() {
   const router = useRouter()
@@ -33,6 +35,11 @@ export default function WagashiSimulator() {
   const [placedItems, setPlacedItems] = useState<PlacedItem[]>([])
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  
+  // カスタマーコードモーダルの状態
+  const [isCustomerCodeModalOpen, setIsCustomerCodeModalOpen] = useState(false)
+  const [customerCode, setCustomerCode] = useState("")
+  const [expiresAt, setExpiresAt] = useState("")
 
   // 商品情報表示設定の初期値
   const [infoSettings, setInfoSettings] = useState<InfoDisplaySettings>({
@@ -62,6 +69,21 @@ export default function WagashiSimulator() {
     
     // 店舗名を取得
     fetchStoreName(storeId)
+    
+    // 読み込まれたレイアウトがあるかチェック
+    const loadedLayout = localStorage.getItem("loadedLayout")
+    if (loadedLayout) {
+      try {
+        const data = JSON.parse(loadedLayout)
+        setBoxSize(data.boxSize)
+        setPlacedItems(data.placedItems)
+        setInfoSettings(data.infoSettings || infoSettings)
+        localStorage.removeItem("loadedLayout") // 使用後は削除
+        toast.success("保存されたレイアウトを読み込みました")
+      } catch (error) {
+        console.error("Failed to load saved layout:", error)
+      }
+    }
   }, [router])
 
   const fetchStoreName = async (storeId: string) => {
@@ -85,6 +107,46 @@ export default function WagashiSimulator() {
     const data = JSON.stringify({ boxSize, placedItems, infoSettings, storeId: selectedStoreId }, null, 2)
     const blob = new Blob([data], { type: "application/json" })
     saveAs(blob, `wagashi-layout-${storeName || 'store'}.json`)
+  }
+
+  // カスタマーコードで保存する関数
+  const handleSaveWithCustomerCode = async () => {
+    if (!selectedStoreId || placedItems.length === 0) {
+      toast.error("保存するレイアウトがありません")
+      return
+    }
+
+    try {
+      const response = await fetch("/api/layouts/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          storeId: selectedStoreId,
+          storeName,
+          boxSize,
+          placedItems,
+          infoSettings,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || "保存に失敗しました")
+        return
+      }
+
+      setCustomerCode(result.customerCode)
+      setExpiresAt(result.expiresAt)
+      setIsCustomerCodeModalOpen(true)
+      toast.success("カスタマーコードで保存しました")
+
+    } catch (error) {
+      console.error("Save error:", error)
+      toast.error("保存に失敗しました")
+    }
   }
 
   const handleLoadLayout = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,10 +232,19 @@ export default function WagashiSimulator() {
             setIsSettingsOpen={setIsSettingsOpen}
             infoSettings={infoSettings}
             handleSaveLayout={handleSaveLayout}
+            handleSaveWithCustomerCode={handleSaveWithCustomerCode}
             handleLoadLayout={handleLoadLayout}
             handleClearLayout={handleClearLayout}
             handleSaveSettings={handleSaveSettings}
             selectedStoreId={selectedStoreId}
+          />
+
+          {/* カスタマーコードモーダル */}
+          <CustomerCodeModal
+            isOpen={isCustomerCodeModalOpen}
+            onClose={() => setIsCustomerCodeModalOpen(false)}
+            customerCode={customerCode}
+            expiresAt={expiresAt}
           />
         </div>
       </TutorialProvider>

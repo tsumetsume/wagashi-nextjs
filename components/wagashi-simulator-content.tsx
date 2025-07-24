@@ -10,7 +10,7 @@ import InventorySettingsModal from "@/components/inventory-settings-modal"
 import ProductUpdateModal from "@/components/product-update-modal"
 import type { BoxSize, PlacedItem, SweetItem } from "@/types/types"
 import { Button } from "@/components/ui/button"
-import { PlusCircle, Save, Upload, HelpCircle, Settings, Package } from "lucide-react"
+import { PlusCircle, Save, Upload, HelpCircle, Settings, Package, Cloud } from "lucide-react"
 import TutorialOverlay from "@/components/tutorial-overlay"
 import TutorialButton from "@/components/tutorial-button"
 import { useTutorialTarget } from "@/hooks/use-tutorial-target"
@@ -27,6 +27,7 @@ interface WagashiSimulatorContentProps {
   setIsSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>
   infoSettings: InfoDisplaySettings
   handleSaveLayout: () => void
+  handleSaveWithCustomerCode: () => void
   handleLoadLayout: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleClearLayout: () => void
   handleSaveSettings: (newSettings: InfoDisplaySettings) => void
@@ -44,6 +45,7 @@ export default function WagashiSimulatorContent({
   setIsSettingsOpen,
   infoSettings,
   handleSaveLayout,
+  handleSaveWithCustomerCode,
   handleLoadLayout,
   handleClearLayout,
   handleSaveSettings,
@@ -87,7 +89,7 @@ export default function WagashiSimulatorContent({
     // グローバルな在庫データを更新
     // 注意: 実際のアプリケーションでは、この更新方法は適切ではありません
     // 本来はコンテキストやReduxなどの状態管理を使用するべきです
-    ;(window as any).updatedSweetsData = updatedSweets
+    ; (window as any).updatedSweetsData = updatedSweets
     setInventoryData(updatedSweets)
 
     // 選択エリアを更新するためにイベントを発火
@@ -154,6 +156,16 @@ export default function WagashiSimulatorContent({
                 </Button>
                 <input id="file-upload" type="file" accept=".json" className="hidden" onChange={handleLoadLayout} />
               </label>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
+                onClick={handleSaveWithCustomerCode}
+              >
+                <Cloud className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">カスタマーコード保存</span>
+                <span className="sm:hidden">コード保存</span>
+              </Button>
             </div>
             <Button
               variant="ghost"
@@ -169,7 +181,7 @@ export default function WagashiSimulatorContent({
               size="sm"
               className="text-white hover:bg-[var(--color-indigo-light)]"
               onClick={() => setIsSettingsOpen(true)}
-              ref={settingsRef}
+              ref={settingsRef as unknown as React.RefObject<HTMLButtonElement>}
             >
               <Settings className="h-5 w-5" />
             </Button>
@@ -193,17 +205,17 @@ export default function WagashiSimulatorContent({
             placedItems={placedItems}
             setPlacedItems={setPlacedItems}
             infoSettings={infoSettings}
-            contextMenuRef={contextMenuRef}
-            productInfoRef={productInfoRef}
-            autoDividerRef={autoDividerRef}
-            printRef={printRef}
+            contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
+            productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
+            autoDividerRef={autoDividerRef as React.RefObject<HTMLDivElement>}
+            printRef={printRef as React.RefObject<HTMLDivElement>}
             selectedStoreId={selectedStoreId}
           />
         </div>
         <div ref={selectionAreaRef} className="md:h-[calc(100vh-100px)] flex">
-          <SelectionArea 
-            placedItems={placedItems} 
-            setPlacedItems={setPlacedItems} 
+          <SelectionArea
+            placedItems={placedItems}
+            setPlacedItems={setPlacedItems}
             inventoryData={inventoryData}
             selectedStoreId={selectedStoreId}
           />
@@ -219,8 +231,8 @@ export default function WagashiSimulatorContent({
         />
       )}
       {isInventoryOpen && (
-        <InventorySettingsModal 
-          onClose={() => setIsInventoryOpen(false)} 
+        <InventorySettingsModal
+          onClose={() => setIsInventoryOpen(false)}
           onUpdateInventory={handleUpdateInventory}
           placedItems={placedItems}
           onRemovePlacedItems={handleRemovePlacedItems}
