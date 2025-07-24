@@ -40,6 +40,9 @@ export default function WagashiSimulator() {
   const [isCustomerCodeModalOpen, setIsCustomerCodeModalOpen] = useState(false)
   const [customerCode, setCustomerCode] = useState("")
   const [expiresAt, setExpiresAt] = useState("")
+  
+  // カスタマーコード保存のローディング状態
+  const [isSavingCustomerCode, setIsSavingCustomerCode] = useState(false)
 
   // 商品情報表示設定の初期値
   const [infoSettings, setInfoSettings] = useState<InfoDisplaySettings>({
@@ -116,6 +119,8 @@ export default function WagashiSimulator() {
       return
     }
 
+    setIsSavingCustomerCode(true)
+    
     try {
       const response = await fetch("/api/layouts/save", {
         method: "POST",
@@ -146,6 +151,8 @@ export default function WagashiSimulator() {
     } catch (error) {
       console.error("Save error:", error)
       toast.error("保存に失敗しました")
+    } finally {
+      setIsSavingCustomerCode(false)
     }
   }
 
@@ -237,7 +244,25 @@ export default function WagashiSimulator() {
             handleClearLayout={handleClearLayout}
             handleSaveSettings={handleSaveSettings}
             selectedStoreId={selectedStoreId}
+            isSavingCustomerCode={isSavingCustomerCode}
           />
+
+          {/* カスタマーコード保存中のオーバーレイ */}
+          {isSavingCustomerCode && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+              <div className="bg-white rounded-lg p-8 shadow-xl flex flex-col items-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-indigo)]"></div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    カスタマーコードを生成中...
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    詰め合わせをデータベースに保存しています
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* カスタマーコードモーダル */}
           <CustomerCodeModal
