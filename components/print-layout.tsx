@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import type { PlacedItem, SweetItem } from "@/types/types"
+import type { PlacedItem, SweetItem, NoshiInfo } from "@/types/types"
 import type { BoxSize } from "@/types/types"
 import type { InfoDisplaySettings } from "@/components/info-settings-modal"
 import { fetchSweets } from "@/services/api-service"
@@ -13,6 +13,7 @@ interface PrintLayoutProps {
   includeItemList: boolean
   includePrice: boolean
   includeAllergies: boolean
+  noshiInfo: NoshiInfo
   infoSettings: InfoDisplaySettings
   isPrintPreview: boolean
   selectedStoreId: string
@@ -25,6 +26,7 @@ export default function PrintLayout({
   includeItemList,
   includePrice,
   includeAllergies,
+  noshiInfo,
   infoSettings,
   isPrintPreview,
   selectedStoreId,
@@ -325,6 +327,24 @@ export default function PrintLayout({
         <h1 className="print-title">{title}</h1>
         <div className="print-date">作成日: {new Date().toLocaleDateString("ja-JP")}</div>
       </div>
+
+      {noshiInfo.enabled && (noshiInfo.upperText || noshiInfo.lowerText) && (
+        <div className="print-noshi">
+          <div className="noshi-container">
+            <div className="noshi-decoration">
+              <div className="noshi-ribbon"></div>
+            </div>
+            <div className="noshi-text">
+              {noshiInfo.upperText && (
+                <div className="noshi-upper-text">{noshiInfo.upperText}</div>
+              )}
+              {noshiInfo.lowerText && (
+                <div className="noshi-lower-text">{noshiInfo.lowerText}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="print-box-container">
         <canvas ref={canvasRef} className={`print-canvas ${isCanvasReady ? "opacity-100" : "opacity-70"}`} />

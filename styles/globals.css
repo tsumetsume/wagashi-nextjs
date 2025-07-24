@@ -92,3 +92,207 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* 印刷用のスタイル */
+.print-layout {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  color: black;
+}
+
+.print-header {
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #92400E;
+  padding-bottom: 10px;
+}
+
+.print-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #92400E;
+  margin: 0 0 5px 0;
+}
+
+.print-date {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 熨斗のスタイル */
+.print-noshi {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.noshi-container {
+  position: relative;
+  background: linear-gradient(135deg, #FFF7E6 0%, #F3E8D3 100%);
+  border: 2px solid #D4A76A;
+  border-radius: 8px;
+  padding: 20px 40px;
+  min-width: 200px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.noshi-decoration {
+  position: absolute;
+  top: -2px;
+  right: 15px;
+  width: 30px;
+  height: 40px;
+}
+
+.noshi-ribbon {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #D4A76A 0%, #B8956A 50%, #D4A76A 100%);
+  clip-path: polygon(0 0, 100% 0, 85% 50%, 100% 100%, 0 100%);
+  border-radius: 2px 2px 0 0;
+}
+
+.noshi-text {
+  position: relative;
+  z-index: 1;
+}
+
+.noshi-upper-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #92400E;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.noshi-lower-text {
+  font-size: 14px;
+  color: #92400E;
+  letter-spacing: 1px;
+}
+
+.print-box-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.print-canvas {
+  border: 2px solid #92400E;
+  border-radius: 4px;
+  transition: opacity 0.3s ease;
+}
+
+.print-canvas-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #92400E;
+  font-size: 14px;
+}
+
+.print-total-price {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #92400E;
+}
+
+.print-total-price .price {
+  color: #D97706;
+}
+
+.print-allergies {
+  margin: 20px 0;
+}
+
+.print-allergies h3 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #92400E;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #E9D8BE;
+  padding-bottom: 5px;
+}
+
+.allergy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.allergy-tag {
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid #F59E0B;
+}
+
+.print-item-list {
+  margin: 20px 0;
+}
+
+.print-item-list h3 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #92400E;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #E9D8BE;
+  padding-bottom: 5px;
+}
+
+.print-item-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.print-item-list th,
+.print-item-list td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #E9D8BE;
+}
+
+.print-item-list th {
+  background: #FFF7E6;
+  font-weight: bold;
+  color: #92400E;
+}
+
+.print-footer {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #E9D8BE;
+  color: #666;
+  font-size: 12px;
+}
+
+/* 印刷時のスタイル調整 */
+@media print {
+  .print-layout {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+  }
+  
+  .print-noshi {
+    page-break-inside: avoid;
+  }
+  
+  .print-box-container {
+    page-break-inside: avoid;
+  }
+  
+  .print-item-list {
+    page-break-inside: avoid;
+  }
+}

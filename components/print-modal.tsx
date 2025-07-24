@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { useState, useEffect, useRef } from "react"
 import PrintLayout from "./print-layout"
-import type { PlacedItem } from "@/types/types"
+import type { PlacedItem, NoshiInfo } from "@/types/types"
 import type { BoxSize } from "@/types/types"
 import type { InfoDisplaySettings } from "@/components/info-settings-modal"
 
@@ -23,6 +23,12 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
   const [includeAllergies, setIncludeAllergies] = useState(true)
   const [title, setTitle] = useState("和菓子詰め合わせ")
   const [isPreviewReady, setIsPreviewReady] = useState(false)
+  const [noshiInfo, setNoshiInfo] = useState<NoshiInfo>({
+    enabled: false,
+    type: "gift",
+    upperText: "",
+    lowerText: ""
+  })
   const printFrameRef = useRef<HTMLIFrameElement>(null)
 
   // プレビューの準備
@@ -132,6 +138,8 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
                 <h1 class="print-title">${title}</h1>
                 <div class="print-date">作成日: ${new Date().toLocaleDateString("ja-JP")}</div>
               </div>
+              
+              ${generateNoshiHTML()}
               
               <div class="print-box-container">
                 <canvas id="print-canvas" width="${Number.parseInt(boxSize) * 40}" height="${Number.parseInt(boxSize) * 40}" class="print-canvas"></canvas>
@@ -381,7 +389,24 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
       .join("\n")
   }
 
-  // sweets配列を取得（実際のコードでは適切なインポートが必要）
+  // 熨斗情報のHTMLを生成
+  const generateNoshiHTML = () => {
+    if (!noshiInfo.enabled || (!noshiInfo.upperText && !noshiInfo.lowerText)) return ""
+
+    return `
+      <div class="print-noshi">
+        <div class="noshi-container">
+          <div class="noshi-decoration">
+            <div class="noshi-ribbon"></div>
+          </div>
+          <div class="noshi-text">
+            ${noshiInfo.upperText ? `<div class="noshi-upper-text">${noshiInfo.upperText}</div>` : ""}
+            ${noshiInfo.lowerText ? `<div class="noshi-lower-text">${noshiInfo.lowerText}</div>` : ""}
+          </div>
+        </div>
+      </div>
+    `
+  }
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -440,6 +465,74 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
                     <label htmlFor="include-allergies">アレルギー情報を含める</label>
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <input
+                      id="include-noshi"
+                      type="checkbox"
+                      checked={noshiInfo.enabled}
+                      onChange={(e) => setNoshiInfo(prev => ({ ...prev, enabled: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    <label htmlFor="include-noshi" className="text-sm font-medium">熨斗を含める</label>
+                  </div>
+                  
+                  {noshiInfo.enabled && (
+                    <div className="ml-6 space-y-3 p-3 border rounded-md bg-gray-50">
+                      <div>
+                        <label htmlFor="noshi-type" className="block text-sm font-medium mb-1">
+                          熨斗の種類
+                        </label>
+                        <select
+                          id="noshi-type"
+                          value={noshiInfo.type}
+                          onChange={(e) => setNoshiInfo(prev => ({ 
+                            ...prev, 
+                            type: e.target.value as NoshiInfo['type'],
+                            upperText: e.target.value === 'celebration' ? '御祝' :
+                                      e.target.value === 'condolence' ? '御供' :
+                                      e.target.value === 'gift' ? '御中元' : ''
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          <option value="celebration">御祝</option>
+                          <option value="condolence">御供</option>
+                          <option value="gift">贈答</option>
+                          <option value="other">その他</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="noshi-upper" className="block text-sm font-medium mb-1">
+                          上書き（表書き）
+                        </label>
+                        <input
+                          id="noshi-upper"
+                          type="text"
+                          value={noshiInfo.upperText}
+                          onChange={(e) => setNoshiInfo(prev => ({ ...prev, upperText: e.target.value }))}
+                          placeholder="例：御祝、内祝、御中元"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="noshi-lower" className="block text-sm font-medium mb-1">
+                          下書き（贈り主）
+                        </label>
+                        <input
+                          id="noshi-lower"
+                          type="text"
+                          value={noshiInfo.lowerText}
+                          onChange={(e) => setNoshiInfo(prev => ({ ...prev, lowerText: e.target.value }))}
+                          placeholder="贈り主のお名前"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="border rounded-md p-4 bg-gray-50">
@@ -461,6 +554,7 @@ export default function PrintModal({ placedItems, boxSize, infoSettings, onClose
                           includeItemList={includeItemList}
                           includePrice={includePrice}
                           includeAllergies={includeAllergies}
+                          noshiInfo={noshiInfo}
                           infoSettings={infoSettings}
                           isPrintPreview={true}
                           selectedStoreId={selectedStoreId}

@@ -80,3 +80,11 @@ export interface PlacedDragItem {
   type: "placedItem"
   id: string
 }
+
+// 熨斗情報の型
+export interface NoshiInfo {
+  enabled: boolean
+  type: "celebration" | "condolence" | "gift" | "other" // 御祝、御供、贈答、その他
+  upperText: string // 上書き（例：御祝、御供、内祝など）
+  lowerText: string // 下書き（贈り主の名前）
+}
