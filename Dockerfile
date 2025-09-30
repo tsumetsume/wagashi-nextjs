@@ -13,6 +13,9 @@ COPY . .
 RUN pnpm build
 RUN pnpm prune --prod
 
+# 初回セットアップのときだけ
+RUN ./setup.sh
+
 EXPOSE 3000
 
 CMD ["pnpm", "start"]

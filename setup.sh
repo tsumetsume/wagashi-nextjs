@@ -6,9 +6,9 @@ echo "🚀 和菓子シミュレーター開発環境のセットアップを開
 echo "📦 依存関係をインストールしています..."
 pnpm install
 
-# Prismaクライアントの生成
-echo "🔧 Prismaクライアントを生成しています..."
-pnpm db:generate
+# データベースのリセット
+echo "🔄 データベースをリセットしています..."
+npx prisma migrate reset --force
 
 # データベースの同期
 echo "🗄️ データベーススキーマを同期しています..."
