@@ -30,3 +30,5 @@ echo "   管理画面: http://localhost:3000/admin"
 echo ""
 echo "🚀 開発サーバーを起動するには:"
 echo "   pnpm dev" 
+
+exec "$@"

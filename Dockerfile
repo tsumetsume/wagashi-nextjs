@@ -10,7 +10,7 @@ COPY . .
 RUN pnpm build && pnpm prune --prod
 
 # 初回セットアップのときだけ
-RUN ./setup.sh
+ENTRYPOINT ["./setup.sh"]
 
 EXPOSE 3000
 
