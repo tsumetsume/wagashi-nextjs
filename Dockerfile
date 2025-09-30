@@ -4,14 +4,10 @@ WORKDIR /app
 COPY ./package.json ./
 COPY ./prisma ./prisma
 
-RUN npm install -g pnpm
-
-RUN pnpm install
-RUN pnpm db:generate
+RUN npm install -g pnpm && pnpm install
 
 COPY . .
-RUN pnpm build
-RUN pnpm prune --prod
+RUN pnpm build && pnpm prune --prod
 
 # 初回セットアップのときだけ
 RUN ./setup.sh
