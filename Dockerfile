@@ -7,9 +7,8 @@ COPY ./prisma ./prisma
 RUN npm install -g pnpm && pnpm install
 
 COPY . .
-RUN pnpm build && pnpm prune --prod
+RUN pnpm build && pnpm prune 
 
-# 初回セットアップのときだけ
 ENTRYPOINT ["/app/setup.sh"]
 
 EXPOSE 3000

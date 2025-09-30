@@ -8,7 +8,7 @@ pnpm install
 
 # データベースのリセット
 echo "🔄 データベースをリセットしています..."
-npx prisma migrate reset --force
+pnpm db:migrate
 
 # データベースの同期
 echo "🗄️ データベーススキーマを同期しています..."
