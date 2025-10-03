@@ -9,7 +9,7 @@ RUN npm install -g pnpm && pnpm install
 COPY . .
 RUN pnpm build && pnpm prune 
 
-ENTRYPOINT ["/app/setup.sh"]
+#ENTRYPOINT ["/app/setup.sh"]
 
 EXPOSE 3000
 
