@@ -181,6 +181,11 @@ export default function WagashiSimulator() {
   const handleClearLayout = () => {
     if (confirm("詰め合わせをクリアしますか？")) {
       setPlacedItems([])
+      // 新しいアイテムのIDトラッキングもクリア
+      // BoxAreaコンポーネント内のnewItemIdsもクリアされるように
+      // カスタムイベントを発火
+      const event = new CustomEvent('clearLayout')
+      window.dispatchEvent(event)
     }
   }
 
