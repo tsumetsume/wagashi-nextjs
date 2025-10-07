@@ -4,6 +4,7 @@ import type React from "react"
 
 // 既存のインポート
 import { useState, useRef, useEffect, useCallback } from "react"
+import { flushSync } from "react-dom"
 import { useDrop } from "react-dnd"
 import type { BoxSize, PlacedItem, DragItem, SweetItem } from "@/types/types"
 import PlacedItemComponent from "./placed-item"
@@ -798,7 +799,7 @@ export default function BoxArea({
   }
 
   // 配置可能かどうかをチェックする関数
-  const checkValidPlacement = (x: number, y: number, width: number, height: number, excludeId?: string) => {
+  const checkValidPlacement = useCallback((x: number, y: number, width: number, height: number, excludeId?: string) => {
     // グリッド外への配置をチェック
     if (x < 0 || y < 0 || x + width > gridSize.width || y + height > gridSize.height) {
       return false
@@ -884,7 +885,7 @@ export default function BoxArea({
     }
 
     return true
-  }
+  }, [placedItems, gridSize])
 
   // 仕切りの長さ調整が可能かチェックする関数
   const checkValidDividerResize = (divider: PlacedItem, newLength: number) => {
@@ -1045,8 +1046,21 @@ export default function BoxArea({
   }
 
   const handleDeleteItem = (id: string) => {
-    // 即座に削除（アニメーションなし）
-    setPlacedItems((prev) => prev.filter((item) => item.id !== id))
+    // 同期的に削除を実行
+    flushSync(() => {
+      setPlacedItems((prev) => prev.filter((item) => item.id !== id))
+    })
+
+    // プレビュー位置をリセット
+    setPreviewPosition({
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      isValid: false,
+      visible: false,
+    })
+
     handleCloseContextMenu()
   }
 
