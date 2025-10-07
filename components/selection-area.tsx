@@ -189,10 +189,10 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
   const totalCount = filteredSweets.length
 
   return (
-    <div className="w-full md:w-80 bg-white p-4 rounded-sm shadow-md flex flex-col h-full border border-[var(--color-indigo-light)]">
-      <h2 className="text-xl font-medium mb-4 text-[var(--color-indigo)] tracking-wide flex items-center justify-between">
+    <div className="w-full lg:w-80 bg-white p-3 sm:p-4 rounded-sm shadow-md flex flex-col h-full border border-[var(--color-indigo-light)]">
+      <h2 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-[var(--color-indigo)] tracking-wide flex items-center justify-between">
         <div className="flex items-center">
-          <span className="inline-block w-1 h-6 bg-[var(--color-indigo)] mr-2"></span>
+          <span className="inline-block w-1 h-5 sm:h-6 bg-[var(--color-indigo)] mr-2"></span>
           和菓子選択
         </div>
         <Button
@@ -281,11 +281,11 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
               .filter((category) => category !== "仕切り")
               .map((category) => (
                 <TabsContent key={category} value={category} className="h-full overflow-y-auto">
-                  <div className="grid grid-cols-2 gap-4 pb-4 max-h-[60vh] overflow-y-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-4 pb-4 max-h-[40vh] lg:max-h-[60vh] overflow-y-auto">
                     {filteredSweets.length > 0 ? (
                       filteredSweets.map((sweet) => <SweetItemComponent key={sweet.id} item={sweet} />)
                     ) : (
-                      <div className="col-span-2 text-center py-8 text-gray-500">このカテゴリの商品はありません</div>
+                      <div className="col-span-2 sm:col-span-3 lg:col-span-2 text-center py-6 sm:py-8 text-gray-500 text-sm">このカテゴリの商品はありません</div>
                     )}
                   </div>
                 </TabsContent>
@@ -293,11 +293,11 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
 
             {activeTab && (
               <TabsContent value="仕切り" className="h-full overflow-y-auto pr-2">
-                <div className="grid grid-cols-2 gap-4 pb-4 max-h-[60vh] overflow-y-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-4 pb-4 max-h-[40vh] lg:max-h-[60vh] overflow-y-auto">
                   {dividers.length > 0 ? (
                     dividers.map((divider) => <DividerItemComponent key={divider.id} item={divider} />)
                   ) : (
-                    <div className="col-span-2 text-center py-8 text-gray-500">仕切りアイテムはありません</div>
+                    <div className="col-span-2 sm:col-span-3 lg:col-span-2 text-center py-6 sm:py-8 text-gray-500 text-sm">仕切りアイテムはありません</div>
                   )}
                 </div>
               </TabsContent>

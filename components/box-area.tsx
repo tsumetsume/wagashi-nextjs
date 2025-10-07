@@ -1521,27 +1521,29 @@ export default function BoxArea({
 
   return (
     <div className="flex-1">
-      <h2 className="text-xl font-medium mb-4 text-[var(--color-indigo)] tracking-wide flex items-center">
-        <span className="inline-block w-1 h-6 bg-[var(--color-indigo)] mr-2"></span>
+      <h2 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-[var(--color-indigo)] tracking-wide flex items-center">
+        <span className="inline-block w-1 h-5 sm:h-6 bg-[var(--color-indigo)] mr-2"></span>
         詰め合わせ箱
       </h2>
-      <div
-        ref={(node) => {
-          boxRef.current = node
-          drop(node)
-        }}
-        className={`relative border-4 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
-          } rounded-sm shadow-md`}
-        style={{
-          width: gridSize.width * cellSize + 8, // 右側の枠線のために8px追加（border-4の両側で8px）
-          height: gridSize.height * cellSize + 8, // 下側の枠線のために8px追加（border-4の両側で8px）
-          display: "grid",
-          gridTemplateColumns: `repeat(${gridSize.width}, ${cellSize}px)`,
-          gridTemplateRows: `repeat(${gridSize.height}, ${cellSize}px)`,
-          paddingRight: 4, // 右側の内側の余白を追加
-          paddingBottom: 4, // 下側の内側の余白を追加
-        }}
-      >
+      <div className="flex justify-center lg:justify-start">
+        <div
+          ref={(node) => {
+            boxRef.current = node
+            drop(node)
+          }}
+          className={`relative border-4 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
+            } rounded-sm shadow-md max-w-full overflow-auto`}
+          style={{
+            width: gridSize.width * cellSize + 8, // 右側の枠線のために8px追加（border-4の両側で8px）
+            height: gridSize.height * cellSize + 8, // 下側の枠線のために8px追加（border-4の両側で8px）
+            display: "grid",
+            gridTemplateColumns: `repeat(${gridSize.width}, ${cellSize}px)`,
+            gridTemplateRows: `repeat(${gridSize.height}, ${cellSize}px)`,
+            paddingRight: 4, // 右側の内側の余白を追加
+            paddingBottom: 4, // 下側の内側の余白を追加
+            minWidth: 'min-content', // 最小幅を内容に合わせる
+          }}
+        >
         {/* グリッド線 */}
         <div className="absolute inset-0 pointer-events-none">
           {Array.from({ length: gridSize.width + 1 }).map((_, i) => (
@@ -1896,6 +1898,7 @@ export default function BoxArea({
           onClose={() => setErrorModal((prev) => ({ ...prev, visible: false }))}
         />
       )}
+      </div>
     </div>
   )
 

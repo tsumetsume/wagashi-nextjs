@@ -118,14 +118,17 @@ export default function WagashiSimulatorContent({
   return (
     <TooltipProvider>
       <div className="min-h-screen washi-bg">
-        <header className="bg-[var(--color-indigo)] text-white p-4 shadow-md relative overflow-hidden">
+        <header className="bg-[var(--color-indigo)] text-white shadow-md relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0 bg-[url('/pattern-japanese.svg')] bg-repeat"></div>
           </div>
-          <div className="container mx-auto flex justify-between items-center relative z-10">
-            <h1 className="text-2xl font-medium tracking-wider">和菓子詰め合わせシミュレーター</h1>
-            <div className="flex items-center gap-2">
-              <div className="flex gap-2" ref={saveLoadRef}>
+          <div className="container mx-auto relative z-10">
+            {/* モバイル用のヘッダー */}
+            <div className="lg:hidden p-3">
+              <h1 className="text-lg font-medium tracking-wider mb-3 text-center">和菓子詰め合わせシミュレーター</h1>
+              
+              {/* 第1行: 箱サイズとメインアクション */}
+              <div className="flex items-center justify-between mb-2">
                 <select
                   className="bg-[var(--color-indigo-light)] border border-[var(--color-indigo-dark)] rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-gold)]"
                   value={boxSize}
@@ -135,36 +138,40 @@ export default function WagashiSimulatorContent({
                   <option value="15x15">15×15</option>
                   <option value="20x20">20×20</option>
                 </select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
-                  onClick={handleClearLayout}
-                >
-                  <PlusCircle className="h-4 w-4 mr-1" />
-                  新規
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
-                  onClick={handleSaveLayout}
-                >
-                  <Save className="h-4 w-4 mr-1" />
-                  保存
-                </Button>
-                <label className="cursor-pointer">
+                
+                <div className="flex gap-1">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
-                    onClick={() => document.getElementById("file-upload")?.click()}
+                    className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2"
+                    onClick={handleClearLayout}
                   >
-                    <Upload className="h-4 w-4 mr-1" />
-                    読込
+                    <PlusCircle className="h-4 w-4" />
                   </Button>
-                  <input id="file-upload" type="file" accept=".json" className="hidden" onChange={handleLoadLayout} />
-                </label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2"
+                    onClick={handleSaveLayout}
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                  <label className="cursor-pointer">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2"
+                      onClick={() => document.getElementById("file-upload")?.click()}
+                    >
+                      <Upload className="h-4 w-4" />
+                    </Button>
+                    <input id="file-upload" type="file" accept=".json" className="hidden" onChange={handleLoadLayout} />
+                  </label>
+                </div>
+              </div>
+
+              {/* 第2行: カスタマーコード保存とその他のアクション */}
+              <div className="flex items-center justify-between">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -179,14 +186,12 @@ export default function WagashiSimulatorContent({
                       {isSavingCustomerCode ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-                          <span className="hidden sm:inline">保存中...</span>
-                          <span className="sm:hidden">保存中</span>
+                          保存中
                         </>
                       ) : (
                         <>
                           <Cloud className="h-4 w-4 mr-1" />
-                          <span className="hidden sm:inline">カスタマーコード保存</span>
-                          <span className="sm:hidden">コード保存</span>
+                          コード保存
                         </>
                       )}
                     </Button>
@@ -201,59 +206,203 @@ export default function WagashiSimulatorContent({
                     )}
                   </TooltipContent>
                 </Tooltip>
+
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-[var(--color-indigo-light)] px-2"
+                    onClick={() => setIsInventoryOpen(true)}
+                  >
+                    <Package className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-[var(--color-indigo-light)] px-2"
+                    onClick={() => setIsSettingsOpen(true)}
+                    ref={settingsRef as unknown as React.RefObject<HTMLButtonElement>}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <TutorialButton />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-[var(--color-indigo-light)] px-2"
+                    onClick={() => setIsHelpOpen(true)}
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-[var(--color-indigo-light)]"
-                onClick={() => setIsInventoryOpen(true)}
-              >
-                <Package className="h-5 w-5" />
-                <span className="hidden sm:inline ml-1">在庫管理</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-[var(--color-indigo-light)]"
-                onClick={() => setIsSettingsOpen(true)}
-                ref={settingsRef as unknown as React.RefObject<HTMLButtonElement>}
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-              <TutorialButton />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-[var(--color-indigo-light)]"
-                onClick={() => setIsHelpOpen(true)}
-              >
-                <HelpCircle className="h-5 w-5" />
-              </Button>
+            </div>
+
+            {/* デスクトップ用のヘッダー */}
+            <div className="hidden lg:flex justify-between items-center p-4">
+              <h1 className="text-2xl font-medium tracking-wider">和菓子詰め合わせシミュレーター</h1>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-2" ref={saveLoadRef}>
+                  <select
+                    className="bg-[var(--color-indigo-light)] border border-[var(--color-indigo-dark)] rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-gold)]"
+                    value={boxSize}
+                    onChange={(e) => setBoxSize(e.target.value as BoxSize)}
+                  >
+                    <option value="10x10">10×10</option>
+                    <option value="15x15">15×15</option>
+                    <option value="20x20">20×20</option>
+                  </select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
+                    onClick={handleClearLayout}
+                  >
+                    <PlusCircle className="h-4 w-4 mr-1" />
+                    新規
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
+                    onClick={handleSaveLayout}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    保存
+                  </Button>
+                  <label className="cursor-pointer">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
+                      onClick={() => document.getElementById("file-upload")?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-1" />
+                      読込
+                    </Button>
+                    <input id="file-upload" type="file" accept=".json" className="hidden" onChange={handleLoadLayout} />
+                  </label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white disabled:opacity-50 disabled:cursor-not-allowed ${!hasPlacedItems && !isSavingCustomerCode ? 'opacity-60' : ''
+                          }`}
+                        onClick={handleSaveWithCustomerCode}
+                        disabled={isCustomerCodeSaveDisabled}
+                        ref={customerCodeSaveRef as unknown as React.RefObject<HTMLButtonElement>}
+                      >
+                        {isSavingCustomerCode ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                            <span className="hidden xl:inline">保存中...</span>
+                            <span className="xl:hidden">保存中</span>
+                          </>
+                        ) : (
+                          <>
+                            <Cloud className="h-4 w-4 mr-1" />
+                            <span className="hidden xl:inline">カスタマーコード保存</span>
+                            <span className="xl:hidden">コード保存</span>
+                          </>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      {isSavingCustomerCode ? (
+                        <p>カスタマーコードを生成中です...</p>
+                      ) : !hasPlacedItems ? (
+                        <p>和菓子を配置してから保存してください</p>
+                      ) : (
+                        <p>詰め合わせをカスタマーコードで保存します</p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-[var(--color-indigo-light)]"
+                  onClick={() => setIsInventoryOpen(true)}
+                >
+                  <Package className="h-5 w-5" />
+                  <span className="hidden xl:inline ml-1">在庫管理</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-[var(--color-indigo-light)]"
+                  onClick={() => setIsSettingsOpen(true)}
+                  ref={settingsRef as unknown as React.RefObject<HTMLButtonElement>}
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+                <TutorialButton />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-[var(--color-indigo-light)]"
+                  onClick={() => setIsHelpOpen(true)}
+                >
+                  <HelpCircle className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="container mx-auto p-4 flex flex-col md:flex-row gap-6 md:min-h-[calc(100vh-80px)]">
-          <div ref={boxAreaRef} className="flex-1">
-            <BoxArea
-              boxSize={boxSize}
-              placedItems={placedItems}
-              setPlacedItems={setPlacedItems}
-              infoSettings={infoSettings}
-              contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
-              productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
-              autoDividerRef={autoDividerRef as React.RefObject<HTMLDivElement>}
-              printRef={printRef as React.RefObject<HTMLDivElement>}
-              selectedStoreId={selectedStoreId}
-            />
+        <main className="container mx-auto p-2 sm:p-4">
+          {/* モバイル用のレイアウト */}
+          <div className="lg:hidden space-y-4">
+            {/* 和菓子選択エリア（モバイルでは上部に配置） */}
+            <div ref={selectionAreaRef} className="w-full">
+              <SelectionArea
+                placedItems={placedItems}
+                setPlacedItems={setPlacedItems}
+                inventoryData={inventoryData}
+                selectedStoreId={selectedStoreId}
+              />
+            </div>
+            
+            {/* 詰め合わせエリア */}
+            <div ref={boxAreaRef} className="w-full">
+              <BoxArea
+                boxSize={boxSize}
+                placedItems={placedItems}
+                setPlacedItems={setPlacedItems}
+                infoSettings={infoSettings}
+                contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
+                productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
+                autoDividerRef={autoDividerRef as React.RefObject<HTMLDivElement>}
+                printRef={printRef as React.RefObject<HTMLDivElement>}
+                selectedStoreId={selectedStoreId}
+              />
+            </div>
           </div>
-          <div ref={selectionAreaRef} className="md:h-[calc(100vh-100px)] flex">
-            <SelectionArea
-              placedItems={placedItems}
-              setPlacedItems={setPlacedItems}
-              inventoryData={inventoryData}
-              selectedStoreId={selectedStoreId}
-            />
+
+          {/* デスクトップ用のレイアウト */}
+          <div className="hidden lg:flex gap-6 min-h-[calc(100vh-120px)]">
+            <div ref={boxAreaRef} className="flex-1">
+              <BoxArea
+                boxSize={boxSize}
+                placedItems={placedItems}
+                setPlacedItems={setPlacedItems}
+                infoSettings={infoSettings}
+                contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
+                productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
+                autoDividerRef={autoDividerRef as React.RefObject<HTMLDivElement>}
+                printRef={printRef as React.RefObject<HTMLDivElement>}
+                selectedStoreId={selectedStoreId}
+              />
+            </div>
+            <div ref={selectionAreaRef} className="h-[calc(100vh-140px)] flex">
+              <SelectionArea
+                placedItems={placedItems}
+                setPlacedItems={setPlacedItems}
+                inventoryData={inventoryData}
+                selectedStoreId={selectedStoreId}
+              />
+            </div>
           </div>
         </main>
 

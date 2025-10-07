@@ -49,16 +49,16 @@ export default function DividerItemComponent({ item }: DividerItemProps) {
         elementRef.current = node
         drag(node)
       }}
-      className={`bg-white border border-[var(--color-indigo-light)] rounded-sm p-2 cursor-move ${
+      className={`bg-white border border-[var(--color-indigo-light)] rounded-sm p-1.5 sm:p-2 cursor-move ${
         isDragging ? "opacity-50" : "opacity-100"
       } hover:shadow-md transition-shadow duration-200 relative overflow-hidden group`}
     >
       <div className="flex flex-col items-center">
-        <div className="w-16 h-16 flex items-center justify-center">
-          <div className={`bg-[var(--color-indigo)] ${item.orientation === "horizontal" ? "w-16 h-1" : "w-1 h-16"}`} />
+        <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
+          <div className={`bg-[var(--color-indigo)] ${item.orientation === "horizontal" ? "w-12 sm:w-16 h-0.5 sm:h-1" : "w-0.5 sm:w-1 h-12 sm:h-16"}`} />
         </div>
-        <h3 className="text-sm font-medium text-[var(--color-indigo)]">{item.name}</h3>
-        <p className="text-xs text-[var(--color-gray)]">
+        <h3 className="text-xs sm:text-sm font-medium text-[var(--color-indigo)] text-center leading-tight">{item.name}</h3>
+        <p className="text-[10px] sm:text-xs text-[var(--color-gray)]">
           {item.orientation === "horizontal" ? "横" : "縦"} {item.length}マス
         </p>
       </div>

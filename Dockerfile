@@ -7,7 +7,7 @@ COPY ./prisma ./prisma
 RUN npm install -g pnpm && pnpm install
 
 COPY . .
-RUN pnpm build && pnpm prune 
+RUN pnpm build && CI=true pnpm prune --prod
 
 #ENTRYPOINT ["/app/setup.sh"]
 
