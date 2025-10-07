@@ -642,7 +642,7 @@ export default function BoxArea({
         canDrop: !!monitor.canDrop(),
       }),
     }),
-    [gridSize, newItemIds, previewPosition.isSnapped],
+    [gridSize, newItemIds, previewPosition.isSnapped, placedItems],
   )
 
   // ドラッグが終了したらプレビューを非表示にする
@@ -653,7 +653,7 @@ export default function BoxArea({
   }, [isOver])
 
   // 水平仕切りのスナップ位置を見つける関数
-  const findHorizontalSnapPosition = (x: number, y: number, length: number, excludeId?: string) => {
+  const findHorizontalSnapPosition = useCallback((x: number, y: number, length: number, excludeId?: string) => {
     // 和菓子のみをフィルタリング
     const sweets = placedItems.filter((item) => item.type === "sweet" && (excludeId ? item.id !== excludeId : true))
 
@@ -694,10 +694,10 @@ export default function BoxArea({
     }
 
     return null
-  }
+  }, [placedItems, snapThreshold])
 
   // 垂直仕切りのスナップ位置を見つける関数
-  const findVerticalSnapPosition = (x: number, y: number, length: number, excludeId?: string) => {
+  const findVerticalSnapPosition = useCallback((x: number, y: number, length: number, excludeId?: string) => {
     // 和菓子のみをフィルタリング
     const sweets = placedItems.filter((item) => item.type === "sweet" && (excludeId ? item.id !== excludeId : true))
 
@@ -738,10 +738,10 @@ export default function BoxArea({
     }
 
     return null
-  }
+  }, [placedItems, snapThreshold])
 
   // グリッドライン上の仕切りの配置可能性をチェックする関数
-  const checkValidGridLinePlacement = (
+  const checkValidGridLinePlacement = useCallback((
     x: number,
     y: number,
     length: number,
@@ -796,7 +796,7 @@ export default function BoxArea({
     })
 
     return !isOverlapping
-  }
+  }, [placedItems, gridSize])
 
   // 配置可能かどうかをチェックする関数
   const checkValidPlacement = useCallback((x: number, y: number, width: number, height: number, excludeId?: string) => {
@@ -909,7 +909,7 @@ export default function BoxArea({
   }
 
   // 仕切りとお菓子の交差をチェックする関数
-  const checkDividerSweetIntersection = (
+  const checkDividerSweetIntersection = useCallback((
     x: number,
     y: number,
     orientation: "horizontal" | "vertical",
@@ -984,7 +984,7 @@ export default function BoxArea({
     }
 
     return true
-  }
+  }, [placedItems])
 
   // 仕切りの長さを調整する関数
   const handleResizeDivider = (id: string, newLength: number) => {
@@ -1052,16 +1052,24 @@ export default function BoxArea({
     })
 
     // プレビュー位置をリセット
-    setPreviewPosition({
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-      isValid: false,
-      visible: false,
+    flushSync(() => {
+      setPreviewPosition({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        isValid: false,
+        visible: false,
+      })
     })
 
+    // コンテキストメニューを閉じる
     handleCloseContextMenu()
+
+    // 強制的に再レンダリングを促すため、少し遅延させてダミー更新
+    setTimeout(() => {
+      setPreviewPosition(prev => ({ ...prev }))
+    }, 0)
   }
 
   const handleToggleLock = (id: string) => {
