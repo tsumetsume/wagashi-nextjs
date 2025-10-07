@@ -653,12 +653,8 @@ export default function BoxArea({
 
   // 水平仕切りのスナップ位置を見つける関数
   const findHorizontalSnapPosition = (x: number, y: number, length: number, excludeId?: string) => {
-    // 和菓子のみをフィルタリング（削除中のアイテムは除外）
-    const sweets = placedItems.filter((item) => 
-      item.type === "sweet" && 
-      (excludeId ? item.id !== excludeId : true) &&
-      !('isDeleting' in item && item.isDeleting)
-    )
+    // 和菓子のみをフィルタリング
+    const sweets = placedItems.filter((item) => item.type === "sweet" && (excludeId ? item.id !== excludeId : true))
 
     // スナップ候補位置
     const snapCandidates: { y: number; distance: number }[] = []
@@ -701,12 +697,8 @@ export default function BoxArea({
 
   // 垂直仕切りのスナップ位置を見つける関数
   const findVerticalSnapPosition = (x: number, y: number, length: number, excludeId?: string) => {
-    // 和菓子のみをフィルタリング（削除中のアイテムは除外）
-    const sweets = placedItems.filter((item) => 
-      item.type === "sweet" && 
-      (excludeId ? item.id !== excludeId : true) &&
-      !('isDeleting' in item && item.isDeleting)
-    )
+    // 和菓子のみをフィルタリング
+    const sweets = placedItems.filter((item) => item.type === "sweet" && (excludeId ? item.id !== excludeId : true))
 
     // スナップ候補位置
     const snapCandidates: { x: number; distance: number }[] = []
@@ -775,11 +767,6 @@ export default function BoxArea({
         return false
       }
 
-      // 削除中のアイテムは無視する
-      if ('isDeleting' in placedItem && placedItem.isDeleting) {
-        return false
-      }
-
       if (placedItem.type !== "divider" || !placedItem.isGridLine) {
         return false
       }
@@ -821,11 +808,6 @@ export default function BoxArea({
     const isOverlapping = placedItems.some((placedItem) => {
       // 自分自身との重複はチェックしない
       if (excludeId && placedItem.id === excludeId) {
-        return false
-      }
-
-      // 削除中のアイテムは無視する
-      if ('isDeleting' in placedItem && placedItem.isDeleting) {
         return false
       }
 
@@ -933,11 +915,8 @@ export default function BoxArea({
     length: number,
     excludeId?: string,
   ) => {
-    // お菓子のみをフィルタリング（削除中のアイテムは除外）
-    const sweets = placedItems.filter((item) => 
-      item.type === "sweet" && 
-      !('isDeleting' in item && item.isDeleting)
-    )
+    // お菓子のみをフィルタリング
+    const sweets = placedItems.filter((item) => item.type === "sweet")
 
     // 仕切りの領域を定義
     const dividerRect = {
@@ -1066,14 +1045,8 @@ export default function BoxArea({
   }
 
   const handleDeleteItem = (id: string) => {
-    // アニメーション付きで削除するため、まずはフラグを設定
-    setPlacedItems((prev) => prev.map((item) => (item.id === id ? { ...item, isDeleting: true } : item)))
-
-    // アニメーション完了後に実際に削除
-    setTimeout(() => {
-      setPlacedItems((prev) => prev.filter((item) => item.id !== id))
-    }, 300)
-
+    // 即座に削除（アニメーションなし）
+    setPlacedItems((prev) => prev.filter((item) => item.id !== id))
     handleCloseContextMenu()
   }
 
@@ -1107,8 +1080,7 @@ export default function BoxArea({
             // 自分自身とは衝突判定しない
             if (otherItem.id === id) return false
 
-            // 削除中のアイテムは無視する
-            if ('isDeleting' in otherItem && otherItem.isDeleting) return false
+
 
             // グリッドライン上の仕切りは無視
             if (otherItem.type === "divider" && otherItem.isGridLine) return false
@@ -1518,7 +1490,7 @@ export default function BoxArea({
 
     document.addEventListener("click", handleClickOutside)
     window.addEventListener("clearLayout", handleClearLayout)
-    
+
     return () => {
       document.removeEventListener("click", handleClickOutside)
       window.removeEventListener("clearLayout", handleClearLayout)
