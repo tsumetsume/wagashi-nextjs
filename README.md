@@ -12,7 +12,7 @@
 
 - **フロントエンド**: Next.js 15, React 19, TypeScript
 - **バックエンド**: Next.js API Routes
-- **データベース**: MySQL 8.0
+- **データベース**: postgresql
 - **ORM**: Prisma
 - **認証**: NextAuth.js
 - **スタイリング**: Tailwind CSS
