@@ -70,7 +70,7 @@ export default function WagashiSimulatorContent({
   const settingsRef = useTutorialTarget("settings")
   const saveLoadRef = useTutorialTarget("save-load")
   const customerCodeSaveRef = useTutorialTarget("customer-code-save")
-  const autoDividerRef = useTutorialTarget("auto-divider")
+
   const printRef = useTutorialTarget("print")
 
   // 商品変更通知を受け取る
@@ -373,7 +373,6 @@ export default function WagashiSimulatorContent({
                 infoSettings={infoSettings}
                 contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
                 productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
-                autoDividerRef={autoDividerRef as React.RefObject<HTMLDivElement>}
                 printRef={printRef as React.RefObject<HTMLDivElement>}
                 selectedStoreId={selectedStoreId}
               />
@@ -390,7 +389,6 @@ export default function WagashiSimulatorContent({
                 infoSettings={infoSettings}
                 contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
                 productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
-                autoDividerRef={autoDividerRef as React.RefObject<HTMLDivElement>}
                 printRef={printRef as React.RefObject<HTMLDivElement>}
                 selectedStoreId={selectedStoreId}
               />

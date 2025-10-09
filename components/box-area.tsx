@@ -18,7 +18,7 @@ import PrintModal from "./print-modal"
 import ErrorModalComponent from "./error-modal"
 import { fetchSweets } from "@/services/api-service"
 
-// BoxAreaProps インターフェースに printRef を追加
+// BoxAreaProps インターフェース
 interface BoxAreaProps {
   boxSize: BoxSize
   placedItems: PlacedItem[]
@@ -26,12 +26,11 @@ interface BoxAreaProps {
   infoSettings: InfoDisplaySettings
   contextMenuRef?: React.RefObject<HTMLDivElement>
   productInfoRef?: React.RefObject<HTMLDivElement>
-  autoDividerRef?: React.RefObject<HTMLDivElement>
   printRef?: React.RefObject<HTMLDivElement>
   selectedStoreId: string
 }
 
-// BoxArea 関数の引数に printRef を追加
+// BoxArea 関数
 export default function BoxArea({
   boxSize,
   placedItems,
@@ -39,7 +38,6 @@ export default function BoxArea({
   infoSettings,
   contextMenuRef,
   productInfoRef,
-  autoDividerRef,
   printRef,
   selectedStoreId,
 }: BoxAreaProps) {
@@ -1145,350 +1143,11 @@ export default function BoxArea({
     handleCloseContextMenu()
   }
 
-  // handleRotateItem関数の後に以下の関数を追加してください
 
-  // 仕切りの自動配置機能
-  const handleAutoPlaceDividers = () => {
-    // 現在配置されている和菓子を取得
-    const sweets = placedItems.filter((item) => item.type === "sweet")
 
-    if (sweets.length < 2) {
-      alert("仕切りを自動配置するには、2つ以上の和菓子が必要です。")
-      return
-    }
 
-    // 既存の仕切りを削除するか確認
-    const existingDividers = placedItems.filter((item) => item.type === "divider")
-    if (existingDividers.length > 0) {
-      if (!confirm("既存の仕切りを削除して新しく配置しますか？")) {
-        return
-      }
-      // 既存の仕切りを削除
-      setPlacedItems((prev) => prev.filter((item) => item.type !== "divider"))
-    }
 
-    // 新しい仕切りを配置
-    const newDividers: PlacedItem[] = []
 
-    // 水平方向の仕切りを配置
-    const horizontalDividers = findOptimalHorizontalDividers(sweets, gridSize.width)
-    newDividers.push(...horizontalDividers)
-
-    // 垂直方向の仕切りを配置
-    const verticalDividers = findOptimalVerticalDividers(sweets, gridSize.height)
-    newDividers.push(...verticalDividers)
-
-    if (newDividers.length === 0) {
-      alert("適切な仕切りの配置場所が見つかりませんでした。")
-      return
-    }
-
-    // 新しい仕切りを追加
-    setPlacedItems((prev) => [...prev.filter((item) => item.type !== "divider"), ...newDividers])
-
-    // 成功メッセージ
-    alert(`${newDividers.length}個の仕切りを自動配置しました。`)
-  }
-
-  // 水平方向の最適な仕切りを見つける関数
-  const findOptimalHorizontalDividers = (sweets: PlacedItem[], maxWidth: number): PlacedItem[] => {
-    const dividers: PlacedItem[] = []
-
-    // 和菓子を上端のY座標でグループ化
-    const sweetsByBottomEdge = new Map<number, PlacedItem[]>()
-    const sweetsByTopEdge = new Map<number, PlacedItem[]>()
-
-    sweets.forEach((sweet) => {
-      const bottom = sweet.y + sweet.height
-      const top = sweet.y
-
-      if (!sweetsByBottomEdge.has(bottom)) {
-        sweetsByBottomEdge.set(bottom, [])
-      }
-      sweetsByBottomEdge.get(bottom)!.push(sweet)
-
-      if (!sweetsByTopEdge.has(top)) {
-        sweetsByTopEdge.set(top, [])
-      }
-      sweetsByTopEdge.get(top)!.push(sweet)
-    })
-
-    // 各行について、下端と上端が一致する場所を探す
-    const potentialDividerPositions = new Set<number>()
-
-    sweetsByBottomEdge.forEach((bottomSweets, bottomY) => {
-      sweetsByTopEdge.forEach((topSweets, topY) => {
-        // 下端と上端が隣接している場合（間に1マスの隙間がある場合）
-        if (topY === bottomY) {
-          potentialDividerPositions.add(bottomY)
-        }
-      })
-    })
-
-    // 各行について、和菓子がない列の範囲を見つける
-    potentialDividerPositions.forEach((y) => {
-      // その行に接している和菓子を取得
-      const touchingSweets = [...(sweetsByBottomEdge.get(y) || []), ...(sweetsByTopEdge.get(y) || [])]
-
-      // 各和菓子の水平範囲を取得
-      const occupiedRanges: { start: number; end: number }[] = touchingSweets.map((sweet) => ({
-        start: sweet.x,
-        end: sweet.x + sweet.width,
-      }))
-
-      // 範囲をソート
-      occupiedRanges.sort((a, b) => a.start - b.start)
-
-      // 重複する範囲をマージ
-      const mergedRanges: { start: number; end: number }[] = []
-      occupiedRanges.forEach((range) => {
-        const lastRange = mergedRanges[mergedRanges.length - 1]
-        if (!lastRange || range.start > lastRange.end) {
-          mergedRanges.push(range)
-        } else if (range.end > lastRange.end) {
-          lastRange.end = range.end
-        }
-      })
-
-      // 各マージされた範囲の間に仕切りを配置
-      for (let i = 0; i < mergedRanges.length - 1; i++) {
-        const start = mergedRanges[i].end
-        const end = mergedRanges[i + 1].start
-
-        if (end > start) {
-          // 仕切りの長さと開始位置を計算
-          const length = end - start
-          const x = start
-
-          // 仕切りが配置可能か確認
-          if (checkDividerSweetIntersection(x, y, "horizontal", length)) {
-            // 新しい仕切りを作成
-            const newDivider: PlacedItem = {
-              id: generateId(),
-              itemId: `auto-h-${x}-${y}`,
-              type: "divider",
-              x,
-              y,
-              width: length,
-              height: 0,
-              rotation: 0,
-              isLocked: false,
-              imageUrl: "",
-              name: "自動配置仕切り（横）",
-              orientation: "horizontal",
-              isGridLine: true,
-            }
-
-            dividers.push(newDivider)
-          }
-        }
-      }
-
-      // 左端に仕切りを配置
-      if (mergedRanges.length > 0 && mergedRanges[0].start > 0) {
-        const length = mergedRanges[0].start
-        const x = 0
-
-        if (checkDividerSweetIntersection(x, y, "horizontal", length)) {
-          const newDivider: PlacedItem = {
-            id: generateId(),
-            itemId: `auto-h-${x}-${y}`,
-            type: "divider",
-            x,
-            y,
-            width: length,
-            height: 0,
-            rotation: 0,
-            isLocked: false,
-            imageUrl: "",
-            name: "自動配置仕切り（横）",
-            orientation: "horizontal",
-            isGridLine: true,
-          }
-
-          dividers.push(newDivider)
-        }
-      }
-
-      // 右端に仕切りを配置
-      if (mergedRanges.length > 0 && mergedRanges[mergedRanges.length - 1].end < maxWidth) {
-        const start = mergedRanges[mergedRanges.length - 1].end
-        const length = maxWidth - start
-
-        if (checkDividerSweetIntersection(start, y, "horizontal", length)) {
-          const newDivider: PlacedItem = {
-            id: generateId(),
-            itemId: `auto-h-${start}-${y}`,
-            type: "divider",
-            x: start,
-            y,
-            width: length,
-            height: 0,
-            rotation: 0,
-            isLocked: false,
-            imageUrl: "",
-            name: "自動配置仕切り（横）",
-            orientation: "horizontal",
-            isGridLine: true,
-          }
-
-          dividers.push(newDivider)
-        }
-      }
-    })
-
-    return dividers
-  }
-
-  // 垂直方向の最適な仕切りを見つける関数
-  const findOptimalVerticalDividers = (sweets: PlacedItem[], maxHeight: number): PlacedItem[] => {
-    const dividers: PlacedItem[] = []
-
-    // 和菓子を左端と右端のX座標でグループ化
-    const sweetsByRightEdge = new Map<number, PlacedItem[]>()
-    const sweetsByLeftEdge = new Map<number, PlacedItem[]>()
-
-    sweets.forEach((sweet) => {
-      const right = sweet.x + sweet.width
-      const left = sweet.x
-
-      if (!sweetsByRightEdge.has(right)) {
-        sweetsByRightEdge.set(right, [])
-      }
-      sweetsByRightEdge.get(right)!.push(sweet)
-
-      if (!sweetsByLeftEdge.has(left)) {
-        sweetsByLeftEdge.set(left, [])
-      }
-      sweetsByLeftEdge.get(left)!.push(sweet)
-    })
-
-    // 各列について、右端と左端が一致する場所を探す
-    const potentialDividerPositions = new Set<number>()
-
-    sweetsByRightEdge.forEach((rightSweets, rightX) => {
-      sweetsByLeftEdge.forEach((leftSweets, leftX) => {
-        // 右端と左端が隣接している場合
-        if (leftX === rightX) {
-          potentialDividerPositions.add(rightX)
-        }
-      })
-    })
-
-    // 各列について、和菓子がない行の範囲を見つける
-    potentialDividerPositions.forEach((x) => {
-      // その列に接している和菓子を取得
-      const touchingSweets = [...(sweetsByRightEdge.get(x) || []), ...(sweetsByLeftEdge.get(x) || [])]
-
-      // 各和菓子の垂直範囲を取得
-      const occupiedRanges: { start: number; end: number }[] = touchingSweets.map((sweet) => ({
-        start: sweet.y,
-        end: sweet.y + sweet.height,
-      }))
-
-      // 範囲をソート
-      occupiedRanges.sort((a, b) => a.start - b.start)
-
-      // 重複する範囲をマージ
-      const mergedRanges: { start: number; end: number }[] = []
-      occupiedRanges.forEach((range) => {
-        const lastRange = mergedRanges[mergedRanges.length - 1]
-        if (!lastRange || range.start > lastRange.end) {
-          mergedRanges.push(range)
-        } else if (range.end > lastRange.end) {
-          lastRange.end = range.end
-        }
-      })
-
-      // 各マージされた範囲の間に仕切りを配置
-      for (let i = 0; i < mergedRanges.length - 1; i++) {
-        const start = mergedRanges[i].end
-        const end = mergedRanges[i + 1].start
-
-        if (end > start) {
-          // 仕切りの長さと開始位置を計算
-          const length = end - start
-          const y = start
-
-          // 仕切りが配置可能か確認
-          if (checkDividerSweetIntersection(x, y, "vertical", length)) {
-            // 新しい仕切りを作成
-            const newDivider: PlacedItem = {
-              id: generateId(),
-              itemId: `auto-v-${x}-${y}`,
-              type: "divider",
-              x,
-              y,
-              width: 0,
-              height: length,
-              rotation: 0,
-              isLocked: false,
-              imageUrl: "",
-              name: "自動配置仕切り（縦）",
-              orientation: "vertical",
-              isGridLine: true,
-            }
-
-            dividers.push(newDivider)
-          }
-        }
-      }
-
-      // 上端に仕切りを配置
-      if (mergedRanges.length > 0 && mergedRanges[0].start > 0) {
-        const length = mergedRanges[0].start
-        const y = 0
-
-        if (checkDividerSweetIntersection(x, y, "vertical", length)) {
-          const newDivider: PlacedItem = {
-            id: generateId(),
-            itemId: `auto-v-${x}-${y}`,
-            type: "divider",
-            x,
-            y,
-            width: 0,
-            height: length,
-            rotation: 0,
-            isLocked: false,
-            imageUrl: "",
-            name: "自動配置仕切り（縦）",
-            orientation: "vertical",
-            isGridLine: true,
-          }
-
-          dividers.push(newDivider)
-        }
-      }
-
-      // 下端に仕切りを配置
-      if (mergedRanges.length > 0 && mergedRanges[mergedRanges.length - 1].end < maxHeight) {
-        const start = mergedRanges[mergedRanges.length - 1].end
-        const length = maxHeight - start
-
-        if (checkDividerSweetIntersection(x, start, "vertical", length)) {
-          const newDivider: PlacedItem = {
-            id: generateId(),
-            itemId: `auto-v-${x}-${start}`,
-            type: "divider",
-            x,
-            y: start,
-            width: 0,
-            height: length,
-            rotation: 0,
-            isLocked: false,
-            imageUrl: "",
-            name: "自動配置仕切り（縦）",
-            orientation: "vertical",
-            isGridLine: true,
-          }
-
-          dividers.push(newDivider)
-        }
-      }
-    })
-
-    return dividers
-  }
 
   // 仕切りの長さ調整モーダルを表示する関数
   const handleOpenResizeModal = (id: string) => {
@@ -1649,29 +1308,7 @@ export default function BoxArea({
               </svg>
               印刷
             </button>
-            <button
-              ref={autoDividerRef}
-              onClick={handleAutoPlaceDividers}
-              className="px-3 py-1.5 bg-[var(--color-indigo)] hover:bg-[var(--color-indigo-light)] text-white rounded-sm text-sm font-medium transition-colors flex items-center gap-1.5 relative overflow-hidden group"
-            >
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--color-gold)] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-white"
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <line x1="12" y1="3" x2="12" y2="21" />
-              </svg>
-              仕切り自動配置
-            </button>
+
           </div>
         </div>
       </div>

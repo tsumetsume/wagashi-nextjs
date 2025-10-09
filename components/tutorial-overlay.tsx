@@ -140,7 +140,6 @@ export default function TutorialOverlay() {
       "settings",
       "save-load",
       "customer-code-save",
-      "auto-divider",
       "print",
       "complete",
     ]
@@ -318,7 +317,6 @@ export default function TutorialOverlay() {
             "settings",
             "save-load",
             "customer-code-save",
-            "auto-divider",
             "print",
             "complete",
           ].map((step) => (
@@ -399,13 +397,7 @@ function getTutorialContent(step: TutorialStep) {
           "「カスタマーコード保存」ボタンをクリックすると、作成した詰め合わせがデータベースに保存され、8文字のカスタマーコードが生成されます。このコードを使って、自宅で作成したレイアウトを店舗で復元できます。",
         hasTarget: true,
       }
-    case "auto-divider":
-      return {
-        title: "仕切りの自動配置",
-        content:
-          "「仕切り自動配置」ボタンをクリックすると、和菓子の間に最適な仕切りを自動的に配置します。和菓子の配置が完了したら、このボタンを使って仕切りを簡単に追加できます。",
-        hasTarget: true,
-      }
+
     case "print":
       return {
         title: "詰め合わせの印刷",

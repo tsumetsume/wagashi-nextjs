@@ -59,10 +59,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
             <ul className="list-disc pl-5 text-sm">
               <li>仕切りは和菓子と交差しないように配置されます</li>
               <li>右クリックメニューから長さを調整可能</li>
-              <li>
-                <span className="font-semibold">仕切り自動配置</span>ボタンで和菓子の間に最適な仕切りを自動配置できます
-              </li>
-              <li>自動配置では、和菓子の間や箱の端に適切な仕切りが配置されます</li>
+
               <li>和菓子に接触する位置にも仕切りを配置できます</li>
             </ul>
           </div>
