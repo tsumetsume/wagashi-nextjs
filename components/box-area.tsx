@@ -14,7 +14,7 @@ import ImageViewerModal from "./image-viewer-modal"
 import { generateId } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import type { InfoDisplaySettings } from "@/components/info-settings-modal"
-import PrintModal from "./print-modal"
+
 import ErrorModalComponent from "./error-modal"
 import { fetchSweets } from "@/services/api-service"
 
@@ -26,7 +26,6 @@ interface BoxAreaProps {
   infoSettings: InfoDisplaySettings
   contextMenuRef?: React.RefObject<HTMLDivElement>
   productInfoRef?: React.RefObject<HTMLDivElement>
-  printRef?: React.RefObject<HTMLDivElement>
   selectedStoreId: string
 }
 
@@ -38,7 +37,6 @@ export default function BoxArea({
   infoSettings,
   contextMenuRef,
   productInfoRef,
-  printRef,
   selectedStoreId,
 }: BoxAreaProps) {
   // 既存のステート定義は省略...
@@ -58,8 +56,7 @@ export default function BoxArea({
   // sweetsデータを状態として管理
   const [sweets, setSweets] = useState<SweetItem[]>([])
 
-  // 印刷モーダル用の状態を追加
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+
 
   // 仕切り長さ調整用の状態
   const [resizingDivider, setResizingDivider] = useState<PlacedItem | null>(null)
@@ -1179,19 +1176,19 @@ export default function BoxArea({
   }, [contextMenu.visible])
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 overflow-visible">
       <h2 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-[var(--color-indigo)] tracking-wide flex items-center">
         <span className="inline-block w-1 h-5 sm:h-6 bg-[var(--color-indigo)] mr-2"></span>
         詰め合わせ箱
       </h2>
-      <div className="flex justify-center lg:justify-start">
+      <div className="flex justify-center lg:justify-start overflow-visible">
         <div
           ref={(node) => {
             boxRef.current = node
             drop(node)
           }}
           className={`relative border-4 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
-            } rounded-sm shadow-md max-w-full overflow-auto`}
+            } rounded-sm shadow-md max-w-full overflow-hidden`}
           style={{
             width: gridSize.width * cellSize + 8, // 右側の枠線のために8px追加（border-4の両側で8px）
             height: gridSize.height * cellSize + 8, // 下側の枠線のために8px追加（border-4の両側で8px）
@@ -1274,55 +1271,9 @@ export default function BoxArea({
         ))}
       </div>
 
-      {/* 合計金額表示 */}
-      <div className="mt-4 p-3 bg-white rounded-sm border border-[var(--color-indigo-light)] shadow-sm">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-medium text-[var(--color-indigo)]">合計金額:</span>
-            <span className="text-xl font-medium text-[var(--color-indigo)]">
-              {calculateTotalPrice().toLocaleString()}円
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              ref={printRef}
-              onClick={() => setIsPrintModalOpen(true)}
-              className="px-3 py-1.5 bg-[var(--color-indigo)] hover:bg-[var(--color-indigo-light)] text-white rounded-sm text-sm font-medium transition-colors flex items-center gap-1.5 relative overflow-hidden group"
-            >
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--color-gold)] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-white"
-              >
-                <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <rect x="6" y="14" width="12" height="8"></rect>
-              </svg>
-              印刷
-            </button>
 
-          </div>
-        </div>
-      </div>
 
-      {/* 印刷モーダル */}
-      {isPrintModalOpen && (
-        <PrintModal
-          placedItems={placedItems}
-          boxSize={boxSize}
-          infoSettings={infoSettings}
-          onClose={() => setIsPrintModalOpen(false)}
-          selectedStoreId={selectedStoreId}
-        />
-      )}
+
 
       {/* コンテキストメニュー */}
       {contextMenu.visible && contextMenu.item && (

@@ -8,10 +8,11 @@ import HelpModal from "@/components/help-modal"
 import InfoSettingsModal, { type InfoDisplaySettings } from "@/components/info-settings-modal"
 import InventorySettingsModal from "@/components/inventory-settings-modal"
 import ProductUpdateModal from "@/components/product-update-modal"
+import PrintModal from "@/components/print-modal"
 import type { BoxSize, PlacedItem, SweetItem } from "@/types/types"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { PlusCircle, Save, Upload, HelpCircle, Settings, Package, Cloud } from "lucide-react"
+import { PlusCircle, Save, Upload, HelpCircle, Settings, Package, Cloud, Printer } from "lucide-react"
 import TutorialOverlay from "@/components/tutorial-overlay"
 import TutorialButton from "@/components/tutorial-button"
 import { useTutorialTarget } from "@/hooks/use-tutorial-target"
@@ -61,6 +62,8 @@ export default function WagashiSimulatorContent({
   // 商品変更通知モーダルの状態
   const [isProductUpdateModalOpen, setIsProductUpdateModalOpen] = useState(false)
   const [productUpdateMessage, setProductUpdateMessage] = useState("商品情報が変更されました")
+  // 印刷モーダルの状態
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
 
   // チュートリアルのターゲット要素の参照
   const selectionAreaRef = useTutorialTarget("select-sweet")
@@ -115,6 +118,13 @@ export default function WagashiSimulatorContent({
   const hasPlacedItems = placedItems.length > 0
   const isCustomerCodeSaveDisabled = isSavingCustomerCode || !hasPlacedItems
 
+  // 合計金額を計算する関数
+  const calculateTotalPrice = () => {
+    return placedItems
+      .filter((item) => item.type === "sweet" && item.price)
+      .reduce((total, item) => total + (item.price || 0), 0)
+  }
+
   return (
     <TooltipProvider>
       <div className="min-h-screen washi-bg">
@@ -125,8 +135,6 @@ export default function WagashiSimulatorContent({
           <div className="container mx-auto relative z-10">
             {/* モバイル用のヘッダー */}
             <div className="lg:hidden p-3">
-              <h1 className="text-lg font-medium tracking-wider mb-3 text-center">和菓子詰め合わせシミュレーター</h1>
-              
               {/* 第1行: 箱サイズとメインアクション */}
               <div className="flex items-center justify-between mb-2">
                 <select
@@ -212,6 +220,15 @@ export default function WagashiSimulatorContent({
                     variant="ghost"
                     size="sm"
                     className="text-white hover:bg-[var(--color-indigo-light)] px-2"
+                    onClick={() => setIsPrintModalOpen(true)}
+                    ref={printRef as unknown as React.RefObject<HTMLButtonElement>}
+                  >
+                    <Printer className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-[var(--color-indigo-light)] px-2"
                     onClick={() => setIsInventoryOpen(true)}
                   >
                     <Package className="h-4 w-4" />
@@ -239,8 +256,7 @@ export default function WagashiSimulatorContent({
             </div>
 
             {/* デスクトップ用のヘッダー */}
-            <div className="hidden lg:flex justify-between items-center p-4">
-              <h1 className="text-2xl font-medium tracking-wider">和菓子詰め合わせシミュレーター</h1>
+            <div className="hidden lg:flex justify-center items-center p-4">
               <div className="flex items-center gap-2">
                 <div className="flex gap-2" ref={saveLoadRef}>
                   <select
@@ -323,6 +339,16 @@ export default function WagashiSimulatorContent({
                   variant="ghost"
                   size="sm"
                   className="text-white hover:bg-[var(--color-indigo-light)]"
+                  onClick={() => setIsPrintModalOpen(true)}
+                  ref={printRef as unknown as React.RefObject<HTMLButtonElement>}
+                >
+                  <Printer className="h-5 w-5" />
+                  <span className="hidden xl:inline ml-1">印刷</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-[var(--color-indigo-light)]"
                   onClick={() => setIsInventoryOpen(true)}
                 >
                   <Package className="h-5 w-5" />
@@ -354,6 +380,16 @@ export default function WagashiSimulatorContent({
         <main className="container mx-auto p-2 sm:p-4">
           {/* モバイル用のレイアウト */}
           <div className="lg:hidden space-y-4">
+            {/* 合計金額表示（モバイル） */}
+            <div className="p-3 bg-white rounded-sm border border-[var(--color-indigo-light)] shadow-sm">
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg font-medium text-[var(--color-indigo)]">合計金額:</span>
+                <span className="text-xl font-medium text-[var(--color-indigo)]">
+                  {calculateTotalPrice().toLocaleString()}円
+                </span>
+              </div>
+            </div>
+            
             {/* 和菓子選択エリア（モバイルでは上部に配置） */}
             <div ref={selectionAreaRef} className="w-full">
               <SelectionArea
@@ -373,15 +409,14 @@ export default function WagashiSimulatorContent({
                 infoSettings={infoSettings}
                 contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
                 productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
-                printRef={printRef as React.RefObject<HTMLDivElement>}
                 selectedStoreId={selectedStoreId}
               />
             </div>
           </div>
 
           {/* デスクトップ用のレイアウト */}
-          <div className="hidden lg:flex gap-6 min-h-[calc(100vh-120px)]">
-            <div ref={boxAreaRef} className="flex-1">
+          <div className="hidden lg:flex gap-6">
+            <div ref={boxAreaRef} className="flex-1 overflow-visible">
               <BoxArea
                 boxSize={boxSize}
                 placedItems={placedItems}
@@ -389,17 +424,28 @@ export default function WagashiSimulatorContent({
                 infoSettings={infoSettings}
                 contextMenuRef={contextMenuRef as React.RefObject<HTMLDivElement>}
                 productInfoRef={productInfoRef as React.RefObject<HTMLDivElement>}
-                printRef={printRef as React.RefObject<HTMLDivElement>}
                 selectedStoreId={selectedStoreId}
               />
             </div>
-            <div ref={selectionAreaRef} className="h-[calc(100vh-140px)] flex">
-              <SelectionArea
-                placedItems={placedItems}
-                setPlacedItems={setPlacedItems}
-                inventoryData={inventoryData}
-                selectedStoreId={selectedStoreId}
-              />
+            <div className="flex flex-col min-h-[calc(100vh-140px)]">
+              {/* 合計金額表示（デスクトップ） */}
+              <div className="mb-4 p-3 bg-white rounded-sm border border-[var(--color-indigo-light)] shadow-sm">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-lg font-medium text-[var(--color-indigo)]">合計金額:</span>
+                  <span className="text-xl font-medium text-[var(--color-indigo)]">
+                    {calculateTotalPrice().toLocaleString()}円
+                  </span>
+                </div>
+              </div>
+              
+              <div ref={selectionAreaRef} className="flex-1">
+                <SelectionArea
+                  placedItems={placedItems}
+                  setPlacedItems={setPlacedItems}
+                  inventoryData={inventoryData}
+                  selectedStoreId={selectedStoreId}
+                />
+              </div>
             </div>
           </div>
         </main>
@@ -427,6 +473,15 @@ export default function WagashiSimulatorContent({
           onReload={handleReload}
           message={productUpdateMessage}
         />
+        {isPrintModalOpen && (
+          <PrintModal
+            placedItems={placedItems}
+            boxSize={boxSize}
+            infoSettings={infoSettings}
+            onClose={() => setIsPrintModalOpen(false)}
+            selectedStoreId={selectedStoreId}
+          />
+        )}
         <TutorialOverlay />
       </div>
     </TooltipProvider>
