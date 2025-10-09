@@ -6,6 +6,53 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 シードデータの投入を開始します...')
 
+  // 箱タイプの作成
+  const boxTypes = []
+  const boxTypeData = [
+    {
+      size: '10x10',
+      name: '小箱',
+      price: 300,
+      description: '少量の和菓子に最適な小さな箱です'
+    },
+    {
+      size: '15x15',
+      name: '中箱',
+      price: 500,
+      description: '中程度の量の和菓子に適した箱です'
+    },
+    {
+      size: '20x20',
+      name: '大箱',
+      price: 800,
+      description: 'たくさんの和菓子を詰め合わせできる大きな箱です'
+    }
+  ]
+
+  for (const boxType of boxTypeData) {
+    try {
+      const createdBoxType = await prisma.boxType.upsert({
+        where: { size: boxType.size },
+        update: {},
+        create: {
+          size: boxType.size,
+          name: boxType.name,
+          price: boxType.price,
+          description: boxType.description,
+          isActive: true
+        }
+      })
+      boxTypes.push(createdBoxType)
+      console.log(`✅ 箱タイプを作成しました: ${boxType.name} (${boxType.size})`)
+    } catch (error) {
+      console.log(`ℹ️ 箱タイプ「${boxType.name}」は既に存在します`)
+      const existingBoxType = await prisma.boxType.findUnique({
+        where: { size: boxType.size }
+      })
+      if (existingBoxType) boxTypes.push(existingBoxType)
+    }
+  }
+
   // 管理者ユーザーの作成
   const hashedPassword = await bcrypt.hash('I9mJCaDrscR06kV', 12)
   

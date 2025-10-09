@@ -91,19 +91,36 @@ model Stock {
   @@map("stocks")
 }
 
+model BoxType {
+  id          String   @id @default(cuid())
+  size        String   @unique // "10x10", "15x15", "20x20"
+  name        String   // "小箱", "中箱", "大箱"
+  price       Int      // 箱の価格（円）
+  description String?  // 箱の説明
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  savedLayouts SavedLayout[]
+
+  @@map("box_types")
+}
+
 model SavedLayout {
   id           String   @id @default(cuid())
   customerCode String   @unique
   storeId      String
   storeName    String
   boxSize      String
+  boxTypeId    String?  // BoxTypeへの参照を追加
   layoutData   Json     // 配置データ（placedItems）
   infoSettings Json     // 表示設定
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   expiresAt    DateTime // 有効期限（30日後など）
 
-  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store   Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  boxType BoxType? @relation(fields: [boxTypeId], references: [id], onDelete: SetNull)
 
   @@map("saved_layouts")
 } 

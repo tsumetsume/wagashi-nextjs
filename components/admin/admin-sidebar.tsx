@@ -20,6 +20,7 @@ const navigation = [
   { name: 'ダッシュボード', href: '/admin', icon: Home },
   { name: '商品管理', href: '/admin/products', icon: Package },
   { name: 'カテゴリー管理', href: '/admin/categories', icon: FolderOpen },
+  { name: '箱タイプ管理', href: '/admin/box-types', icon: Package },
   { name: '店舗管理', href: '/admin/stores', icon: Store },
   { name: '在庫管理', href: '/admin/stock', icon: BarChart3 },
   { name: 'アカウント管理', href: '/admin/accounts', icon: Users },

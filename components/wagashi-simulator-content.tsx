@@ -9,7 +9,8 @@ import InfoSettingsModal, { type InfoDisplaySettings } from "@/components/info-s
 import InventorySettingsModal from "@/components/inventory-settings-modal"
 import ProductUpdateModal from "@/components/product-update-modal"
 import PrintModal from "@/components/print-modal"
-import type { BoxSize, PlacedItem, SweetItem } from "@/types/types"
+import BoxSelectionModal from "@/components/box-selection-modal"
+import type { BoxSize, PlacedItem, SweetItem, BoxType } from "@/types/types"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { PlusCircle, Save, Upload, HelpCircle, Settings, Package, Cloud, Printer } from "lucide-react"
@@ -35,6 +36,8 @@ interface WagashiSimulatorContentProps {
   handleSaveSettings: (newSettings: InfoDisplaySettings) => void
   selectedStoreId: string
   isSavingCustomerCode: boolean
+  selectedBoxType?: BoxType | null
+  onBoxTypeChange?: (boxType: BoxType | null) => void
 }
 
 export default function WagashiSimulatorContent({
@@ -54,6 +57,8 @@ export default function WagashiSimulatorContent({
   handleSaveSettings,
   selectedStoreId,
   isSavingCustomerCode,
+  selectedBoxType,
+  onBoxTypeChange,
 }: WagashiSimulatorContentProps) {
   // 在庫管理モーダルの状態
   const [isInventoryOpen, setIsInventoryOpen] = useState(false)
@@ -64,6 +69,8 @@ export default function WagashiSimulatorContent({
   const [productUpdateMessage, setProductUpdateMessage] = useState("商品情報が変更されました")
   // 印刷モーダルの状態
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+  // 箱選択モーダルの状態
+  const [isBoxSelectionOpen, setIsBoxSelectionOpen] = useState(false)
 
   // チュートリアルのターゲット要素の参照
   const selectionAreaRef = useTutorialTarget("select-sweet")
@@ -114,15 +121,24 @@ export default function WagashiSimulatorContent({
     window.location.reload()
   }
 
+  // 箱選択のハンドラー
+  const handleBoxSelection = (newBoxSize: BoxSize, boxType: BoxType) => {
+    setBoxSize(newBoxSize)
+    onBoxTypeChange?.(boxType)
+  }
+
   // 和菓子が配置されているかチェック
   const hasPlacedItems = placedItems.length > 0
   const isCustomerCodeSaveDisabled = isSavingCustomerCode || !hasPlacedItems
 
   // 合計金額を計算する関数
   const calculateTotalPrice = () => {
-    return placedItems
+    const sweetsTotal = placedItems
       .filter((item) => item.type === "sweet" && item.price)
       .reduce((total, item) => total + (item.price || 0), 0)
+    
+    const boxPrice = selectedBoxType?.price || 0
+    return sweetsTotal + boxPrice
   }
 
   return (
@@ -137,15 +153,15 @@ export default function WagashiSimulatorContent({
             <div className="lg:hidden p-3">
               {/* 第1行: 箱サイズとメインアクション */}
               <div className="flex items-center justify-between mb-2">
-                <select
-                  className="bg-[var(--color-indigo-light)] border border-[var(--color-indigo-dark)] rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-gold)]"
-                  value={boxSize}
-                  onChange={(e) => setBoxSize(e.target.value as BoxSize)}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2"
+                  onClick={() => setIsBoxSelectionOpen(true)}
                 >
-                  <option value="10x10">10×10</option>
-                  <option value="15x15">15×15</option>
-                  <option value="20x20">20×20</option>
-                </select>
+                  <Package className="h-3 w-3 mr-1" />
+                  {selectedBoxType ? selectedBoxType.name : boxSize}
+                </Button>
                 
                 <div className="flex gap-1">
                   <Button
@@ -259,15 +275,15 @@ export default function WagashiSimulatorContent({
             <div className="hidden lg:flex justify-center items-center p-4">
               <div className="flex items-center gap-2">
                 <div className="flex gap-2" ref={saveLoadRef}>
-                  <select
-                    className="bg-[var(--color-indigo-light)] border border-[var(--color-indigo-dark)] rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-gold)]"
-                    value={boxSize}
-                    onChange={(e) => setBoxSize(e.target.value as BoxSize)}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
+                    onClick={() => setIsBoxSelectionOpen(true)}
                   >
-                    <option value="10x10">10×10</option>
-                    <option value="15x15">15×15</option>
-                    <option value="20x20">20×20</option>
-                  </select>
+                    <Package className="h-4 w-4 mr-1" />
+                    {selectedBoxType ? selectedBoxType.name : boxSize}
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -482,6 +498,16 @@ export default function WagashiSimulatorContent({
             selectedStoreId={selectedStoreId}
           />
         )}
+
+        {/* 箱選択モーダル */}
+        <BoxSelectionModal
+          isOpen={isBoxSelectionOpen}
+          onClose={() => setIsBoxSelectionOpen(false)}
+          onSelect={handleBoxSelection}
+          currentBoxSize={boxSize}
+          currentBoxType={selectedBoxType}
+        />
+
         <TutorialOverlay />
       </div>
     </TooltipProvider>

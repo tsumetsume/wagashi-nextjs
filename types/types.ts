@@ -1,6 +1,16 @@
 // 箱のサイズタイプ
 export type BoxSize = "10x10" | "15x15" | "20x20"
 
+// 箱タイプの型
+export interface BoxType {
+  id: string
+  size: BoxSize
+  name: string
+  price: number
+  description?: string
+  isActive: boolean
+}
+
 // 和菓子のカテゴリタイプ
 export type SweetCategory =
   | "焼き菓子"

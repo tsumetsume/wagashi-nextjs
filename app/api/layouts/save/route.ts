@@ -23,7 +23,7 @@ function generateCustomerCode(): string {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { storeId, storeName, boxSize, placedItems, infoSettings } = body
+        const { storeId, storeName, boxSize, placedItems, infoSettings, boxTypeId } = body
 
         if (!storeId || !storeName || !boxSize || !placedItems) {
             return NextResponse.json(
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
                 storeId,
                 storeName,
                 boxSize,
+                boxTypeId: boxTypeId || null,
                 layoutData: placedItems,
                 infoSettings: infoSettings || {},
                 expiresAt

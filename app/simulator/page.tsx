@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import type { InfoDisplaySettings } from "@/components/info-settings-modal"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import type { BoxSize, PlacedItem } from "@/types/types"
+import type { BoxSize, PlacedItem, BoxType } from "@/types/types"
 import saveAs from "file-saver"
 import { TutorialProvider } from "@/contexts/tutorial-context"
 import WagashiSimulatorContent from "@/components/wagashi-simulator-content"
@@ -35,6 +35,7 @@ export default function WagashiSimulator() {
   const [placedItems, setPlacedItems] = useState<PlacedItem[]>([])
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [selectedBoxType, setSelectedBoxType] = useState<BoxType | null>(null)
   
   // カスタマーコードモーダルの状態
   const [isCustomerCodeModalOpen, setIsCustomerCodeModalOpen] = useState(false)
@@ -73,6 +74,9 @@ export default function WagashiSimulator() {
     // 店舗名を取得
     fetchStoreName(storeId)
     
+    // 初期の箱タイプを設定
+    fetchInitialBoxType()
+    
     // 読み込まれたレイアウトがあるかチェック
     const loadedLayout = localStorage.getItem("loadedLayout")
     if (loadedLayout) {
@@ -98,6 +102,27 @@ export default function WagashiSimulator() {
       }
     } catch (error) {
       console.error("Error fetching store name:", error)
+    }
+  }
+
+  const fetchInitialBoxType = async () => {
+    try {
+      const response = await fetch("/api/box-types")
+      if (response.ok) {
+        const boxTypes = await response.json()
+        // 現在のboxSizeに対応する箱タイプを探す
+        const currentBoxType = boxTypes.find((bt: BoxType) => bt.size === boxSize)
+        if (currentBoxType) {
+          setSelectedBoxType(currentBoxType)
+        } else if (boxTypes.length > 0) {
+          // 対応する箱タイプがない場合は最初の箱タイプを選択
+          const firstBoxType = boxTypes[0]
+          setSelectedBoxType(firstBoxType)
+          setBoxSize(firstBoxType.size)
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching initial box type:", error)
     }
   }
 
@@ -133,6 +158,7 @@ export default function WagashiSimulator() {
           boxSize,
           placedItems,
           infoSettings,
+          boxTypeId: selectedBoxType?.id || null,
         }),
       })
 
@@ -258,6 +284,8 @@ export default function WagashiSimulator() {
             handleSaveSettings={handleSaveSettings}
             selectedStoreId={selectedStoreId}
             isSavingCustomerCode={isSavingCustomerCode}
+            selectedBoxType={selectedBoxType}
+            onBoxTypeChange={setSelectedBoxType}
           />
 
           {/* カスタマーコード保存中のオーバーレイ */}
