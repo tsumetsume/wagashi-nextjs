@@ -153,15 +153,27 @@ export default function WagashiSimulatorContent({
             <div className="lg:hidden p-3">
               {/* 第1行: 箱サイズとメインアクション */}
               <div className="flex items-center justify-between mb-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2"
-                  onClick={() => setIsBoxSelectionOpen(true)}
-                >
-                  <Package className="h-3 w-3 mr-1" />
-                  {selectedBoxType ? selectedBoxType.name : boxSize}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2 relative"
+                      onClick={() => setIsBoxSelectionOpen(true)}
+                    >
+                      <Package className="h-3 w-3 mr-1" />
+                      <span className="text-xs">
+                        {selectedBoxType ? selectedBoxType.name : boxSize}
+                      </span>
+                      <svg className="h-2 w-2 ml-1 opacity-70" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>箱のサイズを変更</p>
+                  </TooltipContent>
+                </Tooltip>
                 
                 <div className="flex gap-1">
                   <Button
@@ -275,15 +287,27 @@ export default function WagashiSimulatorContent({
             <div className="hidden lg:flex justify-center items-center p-4">
               <div className="flex items-center gap-2">
                 <div className="flex gap-2" ref={saveLoadRef}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
-                    onClick={() => setIsBoxSelectionOpen(true)}
-                  >
-                    <Package className="h-4 w-4 mr-1" />
-                    {selectedBoxType ? selectedBoxType.name : boxSize}
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white relative"
+                        onClick={() => setIsBoxSelectionOpen(true)}
+                      >
+                        <Package className="h-4 w-4 mr-2" />
+                        <span>
+                          {selectedBoxType ? selectedBoxType.name : boxSize}
+                        </span>
+                        <svg className="h-3 w-3 ml-2 opacity-70" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>箱のサイズを変更（クリックして選択）</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <Button
                     variant="outline"
                     size="sm"
@@ -398,11 +422,26 @@ export default function WagashiSimulatorContent({
           <div className="lg:hidden space-y-4">
             {/* 合計金額表示（モバイル） */}
             <div className="p-3 bg-white rounded-sm border border-[var(--color-indigo-light)] shadow-sm">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-lg font-medium text-[var(--color-indigo)]">合計金額:</span>
-                <span className="text-xl font-medium text-[var(--color-indigo)]">
-                  {calculateTotalPrice().toLocaleString()}円
-                </span>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">和菓子:</span>
+                  <span>
+                    {placedItems
+                      .filter((item) => item.type === "sweet" && item.price)
+                      .reduce((total, item) => total + (item.price || 0), 0)
+                      .toLocaleString()}円
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">箱代:</span>
+                  <span>{selectedBoxType ? selectedBoxType.price.toLocaleString() : 0}円</span>
+                </div>
+                <div className="border-t pt-2 flex justify-between">
+                  <span className="text-lg font-medium text-[var(--color-indigo)]">合計:</span>
+                  <span className="text-xl font-bold text-[var(--color-indigo)]">
+                    {calculateTotalPrice().toLocaleString()}円
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -445,12 +484,27 @@ export default function WagashiSimulatorContent({
             </div>
             <div className="flex flex-col min-h-[calc(100vh-140px)]">
               {/* 合計金額表示（デスクトップ） */}
-              <div className="mb-4 p-3 bg-white rounded-sm border border-[var(--color-indigo-light)] shadow-sm">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-lg font-medium text-[var(--color-indigo)]">合計金額:</span>
-                  <span className="text-xl font-medium text-[var(--color-indigo)]">
-                    {calculateTotalPrice().toLocaleString()}円
-                  </span>
+              <div className="mb-4 p-4 bg-white rounded-sm border border-[var(--color-indigo-light)] shadow-sm">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">和菓子:</span>
+                    <span>
+                      {placedItems
+                        .filter((item) => item.type === "sweet" && item.price)
+                        .reduce((total, item) => total + (item.price || 0), 0)
+                        .toLocaleString()}円
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">箱代 ({selectedBoxType ? selectedBoxType.name : boxSize}):</span>
+                    <span>{selectedBoxType ? selectedBoxType.price.toLocaleString() : 0}円</span>
+                  </div>
+                  <div className="border-t pt-2 flex justify-between">
+                    <span className="text-lg font-medium text-[var(--color-indigo)]">合計:</span>
+                    <span className="text-xl font-bold text-[var(--color-indigo)]">
+                      {calculateTotalPrice().toLocaleString()}円
+                    </span>
+                  </div>
                 </div>
               </div>
               

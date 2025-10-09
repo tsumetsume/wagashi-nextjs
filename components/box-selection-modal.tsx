@@ -90,8 +90,11 @@ export default function BoxSelectionModal({
         <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Package className="h-5 w-5" />
-            詰め合わせ箱を選択
+            詰め合わせ箱のサイズを選択
           </DialogTitle>
+          <p className="text-sm text-gray-600 mt-2">
+            箱のサイズによって価格が異なります。お好みのサイズをお選びください。
+          </p>
         </DialogHeader>
 
         {loading ? (
@@ -115,6 +118,9 @@ export default function BoxSelectionModal({
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
+                        <div className="bg-blue-100 p-2 rounded-lg">
+                          <Package className="h-6 w-6 text-blue-600" />
+                        </div>
                         <div>
                           <h3 className="font-semibold text-lg">{boxType.name}</h3>
                           <Badge variant="outline" className="text-xs">
@@ -136,6 +142,11 @@ export default function BoxSelectionModal({
                         {boxType.description}
                       </p>
                     )}
+                    <div className="mt-3 pt-2 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">
+                        クリックして選択
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
