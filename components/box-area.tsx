@@ -61,8 +61,45 @@ export default function BoxArea({
   // 仕切り長さ調整用の状態
   const [resizingDivider, setResizingDivider] = useState<PlacedItem | null>(null)
 
-  // セルサイズを定義
-  const cellSize = 40
+  // レスポンシブな最大エリアサイズを定義
+  const getMaxAreaSize = () => {
+    if (typeof window !== 'undefined') {
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      
+      // デスクトップ（lg以上）
+      if (viewportWidth >= 1024) {
+        return Math.min(800, viewportWidth * 0.5, viewportHeight * 0.8)
+      }
+      // タブレット（md以上）
+      else if (viewportWidth >= 768) {
+        return Math.min(600, viewportWidth * 0.7, viewportHeight * 0.7)
+      }
+      // モバイル
+      else {
+        return Math.min(400, viewportWidth * 0.95, viewportHeight * 0.6)
+      }
+    }
+    return 800 // サーバーサイドレンダリング時のデフォルト
+  }
+  
+  const [maxAreaSize, setMaxAreaSize] = useState(getMaxAreaSize())
+  
+  // ウィンドウリサイズ時にサイズを更新
+  useEffect(() => {
+    const handleResize = () => {
+      setMaxAreaSize(getMaxAreaSize())
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  
+  // セルサイズを動的に計算（最小サイズを確保）
+  const cellSize = Math.max(
+    Math.floor(maxAreaSize / Math.max(gridSize.width, gridSize.height)),
+    12 // 最小セルサイズをさらに小さく
+  )
 
   // 新しく追加されたアイテムのIDを追跡
   const [newItemIds, setNewItemIds] = useState<Set<string>>(new Set())
@@ -1177,11 +1214,19 @@ export default function BoxArea({
 
   return (
     <div className="flex-1 overflow-visible">
-      <h2 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-[var(--color-indigo)] tracking-wide flex items-center">
-        <span className="inline-block w-1 h-5 sm:h-6 bg-[var(--color-indigo)] mr-2"></span>
-        詰め合わせ箱
-      </h2>
-      <div className="flex justify-center lg:justify-start overflow-visible">
+      <div className="mb-3 sm:mb-4">
+        <h2 className="text-lg sm:text-xl font-medium text-[var(--color-indigo)] tracking-wide flex items-center">
+          <span className="inline-block w-1 h-5 sm:h-6 bg-[var(--color-indigo)] mr-2"></span>
+          詰め合わせ箱
+        </h2>
+        <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+          <span>サイズ: {boxSize} ({gridSize.width}×{gridSize.height}マス)</span>
+          <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+            マス目サイズ: {cellSize}px
+          </span>
+        </div>
+      </div>
+      <div className="flex justify-center overflow-visible">
         <div
           ref={(node) => {
             boxRef.current = node
@@ -1190,8 +1235,10 @@ export default function BoxArea({
           className={`relative border-4 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
             } rounded-sm shadow-md max-w-full overflow-hidden`}
           style={{
-            width: gridSize.width * cellSize + 8, // 右側の枠線のために8px追加（border-4の両側で8px）
-            height: gridSize.height * cellSize + 8, // 下側の枠線のために8px追加（border-4の両側で8px）
+            width: gridSize.width * cellSize + 8, // 実際のグリッドサイズ + 枠線のために8px追加
+            height: gridSize.height * cellSize + 8, // 実際のグリッドサイズ + 枠線のために8px追加
+            maxWidth: maxAreaSize + 8, // レスポンシブな最大サイズを制限
+            maxHeight: maxAreaSize + 8, // レスポンシブな最大サイズを制限
             display: "grid",
             gridTemplateColumns: `repeat(${gridSize.width}, ${cellSize}px)`,
             gridTemplateRows: `repeat(${gridSize.height}, ${cellSize}px)`,

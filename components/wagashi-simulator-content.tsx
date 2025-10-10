@@ -417,7 +417,7 @@ export default function WagashiSimulatorContent({
           </div>
         </header>
 
-        <main className="container mx-auto p-2 sm:p-4">
+        <main className="container mx-auto p-1 sm:p-2 lg:p-4">
           {/* モバイル用のレイアウト */}
           <div className="lg:hidden space-y-4">
             {/* 合計金額表示（モバイル） */}
@@ -456,7 +456,7 @@ export default function WagashiSimulatorContent({
             </div>
             
             {/* 詰め合わせエリア */}
-            <div ref={boxAreaRef} className="w-full">
+            <div ref={boxAreaRef} className="w-full flex justify-center">
               <BoxArea
                 boxSize={boxSize}
                 placedItems={placedItems}
@@ -470,8 +470,8 @@ export default function WagashiSimulatorContent({
           </div>
 
           {/* デスクトップ用のレイアウト */}
-          <div className="hidden lg:flex gap-6">
-            <div ref={boxAreaRef} className="flex-1 overflow-visible">
+          <div className="hidden lg:flex gap-4">
+            <div ref={boxAreaRef} className="flex-1 overflow-visible max-w-none">
               <BoxArea
                 boxSize={boxSize}
                 placedItems={placedItems}
@@ -482,7 +482,7 @@ export default function WagashiSimulatorContent({
                 selectedStoreId={selectedStoreId}
               />
             </div>
-            <div className="flex flex-col min-h-[calc(100vh-140px)]">
+            <div className="flex flex-col min-h-[calc(100vh-140px)] w-80 flex-shrink-0">
               {/* 合計金額表示（デスクトップ） */}
               <div className="mb-4 p-4 bg-white rounded-sm border border-[var(--color-indigo-light)] shadow-sm">
                 <div className="space-y-2">

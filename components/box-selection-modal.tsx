@@ -84,6 +84,20 @@ export default function BoxSelectionModal({
     }
   }
 
+  const getVisualSize = (size: BoxSize) => {
+    // 視覚的なサイズ表現（ピクセル）
+    switch (size) {
+      case "10x10":
+        return 60
+      case "15x15":
+        return 80
+      case "20x20":
+        return 100
+      default:
+        return 60
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto">
@@ -116,7 +130,7 @@ export default function BoxSelectionModal({
                   onClick={() => setSelectedBoxType(boxType)}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className="bg-blue-100 p-2 rounded-lg">
                           <Package className="h-6 w-6 text-blue-600" />
@@ -137,6 +151,31 @@ export default function BoxSelectionModal({
                         )}
                       </div>
                     </div>
+                    
+                    {/* 箱のサイズを視覚的に表現 */}
+                    <div className="flex items-center justify-center mb-3">
+                      <div className="relative">
+                        <div 
+                          className="border-2 border-blue-300 bg-blue-50 rounded"
+                          style={{
+                            width: `${getVisualSize(boxType.size)}px`,
+                            height: `${getVisualSize(boxType.size)}px`,
+                          }}
+                        >
+                          <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-0">
+                            {Array.from({ length: 16 }).map((_, i) => (
+                              <div key={i} className="border border-blue-200 opacity-30" />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="text-center mt-1">
+                          <span className="text-xs text-gray-500">
+                            {boxType.size.split('x')[0]}×{boxType.size.split('x')[1]} マス
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
                     {boxType.description && (
                       <p className="text-sm text-gray-600 mt-2">
                         {boxType.description}
