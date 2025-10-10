@@ -69,18 +69,18 @@ export default function BoxArea({
       
       // デスクトップ（lg以上）
       if (viewportWidth >= 1024) {
-        return Math.min(800, viewportWidth * 0.5, viewportHeight * 0.8)
+        return Math.min(900, viewportWidth * 0.6, viewportHeight * 0.85)
       }
       // タブレット（md以上）
       else if (viewportWidth >= 768) {
-        return Math.min(600, viewportWidth * 0.7, viewportHeight * 0.7)
+        return Math.min(700, viewportWidth * 0.8, viewportHeight * 0.75)
       }
       // モバイル
       else {
-        return Math.min(400, viewportWidth * 0.95, viewportHeight * 0.6)
+        return Math.min(450, viewportWidth * 0.98, viewportHeight * 0.65)
       }
     }
-    return 800 // サーバーサイドレンダリング時のデフォルト
+    return 900 // サーバーサイドレンダリング時のデフォルト
   }
   
   const [maxAreaSize, setMaxAreaSize] = useState(getMaxAreaSize())
@@ -1213,7 +1213,7 @@ export default function BoxArea({
   }, [contextMenu.visible])
 
   return (
-    <div className="flex-1 overflow-visible">
+    <div className="flex-1 overflow-visible w-full">
       <div className="mb-3 sm:mb-4">
         <h2 className="text-lg sm:text-xl font-medium text-[var(--color-indigo)] tracking-wide flex items-center">
           <span className="inline-block w-1 h-5 sm:h-6 bg-[var(--color-indigo)] mr-2"></span>
@@ -1226,24 +1226,22 @@ export default function BoxArea({
           </span>
         </div>
       </div>
-      <div className="flex justify-center overflow-visible">
+      <div className="flex justify-center overflow-visible w-full">
         <div
           ref={(node) => {
             boxRef.current = node
             drop(node)
           }}
-          className={`relative border-4 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
-            } rounded-sm shadow-md max-w-full overflow-hidden`}
+          className={`relative border-2 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
+            } rounded shadow-md max-w-full overflow-hidden`}
           style={{
-            width: gridSize.width * cellSize + 8, // 実際のグリッドサイズ + 枠線のために8px追加
-            height: gridSize.height * cellSize + 8, // 実際のグリッドサイズ + 枠線のために8px追加
-            maxWidth: maxAreaSize + 8, // レスポンシブな最大サイズを制限
-            maxHeight: maxAreaSize + 8, // レスポンシブな最大サイズを制限
+            width: gridSize.width * cellSize, // 実際のグリッドサイズのみ
+            height: gridSize.height * cellSize, // 実際のグリッドサイズのみ
+            maxWidth: maxAreaSize, // レスポンシブな最大サイズを制限
+            maxHeight: maxAreaSize, // レスポンシブな最大サイズを制限
             display: "grid",
             gridTemplateColumns: `repeat(${gridSize.width}, ${cellSize}px)`,
             gridTemplateRows: `repeat(${gridSize.height}, ${cellSize}px)`,
-            paddingRight: 4, // 右側の内側の余白を追加
-            paddingBottom: 4, // 下側の内側の余白を追加
             minWidth: 'min-content', // 最小幅を内容に合わせる
           }}
         >
@@ -1431,7 +1429,7 @@ export default function BoxArea({
                     </p>
                   )}
                   {infoSettings.showAllergies && infoModalItem.type === "sweet" && (
-                    <div className="mb-2">
+                    <div className="mb-1">
                       <span className="font-medium text-[var(--color-indigo)]">アレルギー:</span>{" "}
                       {getAllergies(infoModalItem.itemId).length > 0 ? (
                         <div className="flex flex-wrap gap-1 mt-1">

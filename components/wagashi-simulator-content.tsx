@@ -456,7 +456,7 @@ export default function WagashiSimulatorContent({
             </div>
             
             {/* 詰め合わせエリア */}
-            <div ref={boxAreaRef} className="w-full flex justify-center">
+            <div ref={boxAreaRef} className="w-full">
               <BoxArea
                 boxSize={boxSize}
                 placedItems={placedItems}
@@ -471,7 +471,7 @@ export default function WagashiSimulatorContent({
 
           {/* デスクトップ用のレイアウト */}
           <div className="hidden lg:flex gap-4">
-            <div ref={boxAreaRef} className="flex-1 overflow-visible max-w-none">
+            <div ref={boxAreaRef} className="flex-1 overflow-visible max-w-none w-full">
               <BoxArea
                 boxSize={boxSize}
                 placedItems={placedItems}
