@@ -1,10 +1,21 @@
 #!/bin/bash
 
+# NODE_ENVがproductionでない場合は処理を終了
+if [ "$NODE_ENV" != "production" ]; then
+    echo "⚠️ NODE_ENVがproductionではありません。セットアップをスキップします。"
+    echo "現在のNODE_ENV: ${NODE_ENV:-未設定}"
+    exit 0
+fi
+
 echo "🚀 和菓子シミュレーター開発環境のセットアップを開始します..."
 
 # 依存関係のインストール
-echo "📦 依存関係をインストールしています..."
-pnpm install
+# echo "📦 依存関係をインストールしています..."
+# pnpm install
+
+# データベースの削除
+echo "�️ 既存のデスータベースを削除しています..."
+pnpm db:delete || echo "⚠️ データベースが存在しないか、削除に失敗しました"
 
 # データベースのリセット
 echo "🔄 データベースをリセットしています..."
