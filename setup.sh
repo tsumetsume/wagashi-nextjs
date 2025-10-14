@@ -10,12 +10,16 @@ fi
 echo "🚀 和菓子シミュレーター開発環境のセットアップを開始します..."
 
 # 依存関係のインストール
-# echo "📦 依存関係をインストールしています..."
-# pnpm install
+echo "📦 依存関係をインストールしています..."
+pnpm install
+
+# Prismaクライアントの生成
+echo "🔧 Prismaクライアントを生成しています..."
+pnpm db:generate
 
 # データベースの削除
 echo "�️ 既存のデスータベースを削除しています..."
-pnpm db:delete || echo "⚠️ データベースが存在しないか、削除に失敗しました"
+rm -f prisma/dev.db prisma/dev.db-journal || echo "⚠️ データベースファイルが存在しないか、削除に失敗しました"
 
 # データベースのリセット
 echo "🔄 データベースをリセットしています..."
