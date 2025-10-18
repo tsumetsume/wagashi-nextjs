@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,17 +35,25 @@ export async function POST(request: NextRequest) {
     const extension = file.name.split('.').pop()
     const fileName = `${timestamp}.${extension}`
 
-    // アップロードディレクトリの作成
-    const uploadDir = join(process.cwd(), 'public', 'uploads')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
+    // Supabaseストレージにアップロード
+    const { data, error } = await supabaseAdmin.storage
+      .from('images') // バケット名
+      .upload(`products/${fileName}`, buffer, {
+        contentType: file.type,
+        upsert: false
+      })
+
+    if (error) {
+      console.error('Supabase upload error:', error)
+      return NextResponse.json({ error: 'ファイルのアップロードに失敗しました' }, { status: 500 })
     }
 
-    // ファイルの保存
-    const filePath = join(uploadDir, fileName)
-    await writeFile(filePath, buffer)
+    // 公開URLの取得
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from('images')
+      .getPublicUrl(`products/${fileName}`)
 
-    const imageUrl = `/uploads/${fileName}`
+    const imageUrl = publicUrl
 
     return NextResponse.json({ 
       success: true, 
