@@ -4,7 +4,7 @@
 if [ "$NODE_ENV" != "production" ]; then
     echo "⚠️ NODE_ENVがproductionではありません。セットアップをスキップします。"
     echo "現在のNODE_ENV: ${NODE_ENV:-未設定}"
-    exit 0
+    exec "$@"
 fi
 
 echo "🚀 和菓子シミュレーター開発環境のセットアップを開始します..."
