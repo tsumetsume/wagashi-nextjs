@@ -5,9 +5,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://wagashi_user:wagashi_password@postgres:5432/wagashi_simulator
-      - NEXTAUTH_SECRET=your-secret-key-here-change-this-in-production
-      - NEXTAUTH_URL=http://localhost:3000
+    env_file:
+      - .env.local
     volumes:
       - ./:/app
       - ./public/uploads:/app/public/uploads

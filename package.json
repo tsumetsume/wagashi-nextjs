@@ -11,7 +11,10 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "migrate:supabase": "tsx scripts/migrate-to-supabase.ts",
+    "types:generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > lib/database.types.ts",
+    "db:test": "tsx scripts/test-db-connection.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -85,6 +88,7 @@
     "@types/react": "^19.1.15",
     "@types/react-dom": "^19.1.9",
     "postcss": "^8.5.6",
+    "supabase": "^1.200.3",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.6",
     "typescript": "^5.9.2"

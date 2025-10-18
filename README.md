@@ -12,7 +12,7 @@
 
 - **フロントエンド**: Next.js 15, React 19, TypeScript
 - **バックエンド**: Next.js API Routes
-- **データベース**: PostgreSQL
+- **データベース**: Supabase PostgreSQL
 - **ORM**: Prisma
 - **認証**: NextAuth.js
 - **ファイルストレージ**: Supabase Storage
@@ -66,9 +66,11 @@ pnpm db:seed
 
 1. [Supabase](https://supabase.com)にアクセスしてアカウントを作成
 2. 新しいプロジェクトを作成
-3. プロジェクトの設定から以下の情報を取得：
+3. データベースのパスワードを設定（強力なパスワードを推奨）
+4. プロジェクトの設定から以下の情報を取得：
    - Project URL
    - API Keys（anon public key と service_role key）
+   - Database URL（Settings > Database > Connection string > URI）
 
 #### 4.2 ストレージバケットの作成
 
@@ -100,18 +102,74 @@ FOR DELETE USING (bucket_id = 'images' AND auth.role() = 'authenticated');
 `.env.local`ファイルに以下のSupabase設定を追加：
 
 ```env
+# Database (Supabase PostgreSQL)
+# Connect to Supabase via connection pooling
+DATABASE_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+# Direct connection to the database. Used for migrations
+DIRECT_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
+
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+SUPABASE_PROJECT_ID=your-supabase-project-id
+
+# NextAuth.js
+NEXTAUTH_SECRET="your-secret-key-here-change-this-in-production"
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
-**注意**: `your-supabase-project-url`、`your-supabase-anon-key`、`your-supabase-service-role-key`を実際の値に置き換えてください。
+**注意**: 
+- `[YOUR-PASSWORD]`をSupabaseプロジェクト作成時に設定したデータベースパスワードに置き換え
+- `[YOUR-PROJECT-REF]`をプロジェクトリファレンスに置き換え
+- その他の値も実際の値に置き換えてください
 
-### 5. Docker Composeで起動
+**接続方式の説明**:
+- `DATABASE_URL`: 接続プール経由（通常のアプリケーション処理用）
+- `DIRECT_URL`: 直接接続（マイグレーションやスキーマ変更用）
+
+#### 4.5 データベーススキーマの作成
+
+Supabaseデータベースにテーブルを作成：
 
 ```bash
-# コンテナの起動
+# Prismaクライアントの生成
+pnpm db:generate
+
+# Supabaseデータベースにスキーマを適用
+pnpm db:push
+
+# 初期データの投入
+pnpm db:seed
+```
+
+#### 4.6 既存データの移行（オプション）
+
+既存のローカルデータベースからSupabaseに移行する場合：
+
+```bash
+# 移行スクリプトの実行
+SOURCE_DATABASE_URL="postgresql://wagashi_user:wagashi_password@localhost:5432/wagashi_simulator" \
+DATABASE_URL="your-supabase-database-url" \
+tsx scripts/migrate-to-supabase.ts
+```
+
+### 5. アプリケーションの起動
+
+#### Supabaseを使用する場合（推奨）
+
+```bash
+# 依存関係のインストール
+pnpm install
+
+# 開発サーバーの起動
+pnpm dev
+```
+
+#### ローカルPostgreSQLを使用する場合
+
+```bash
+# Docker Composeでローカル環境を起動
 docker-compose up -d
 ```
 
@@ -172,6 +230,7 @@ pnpm db:push        # データベーススキーマの同期
 pnpm db:migrate     # マイグレーションの実行
 pnpm db:seed        # シードデータの投入
 pnpm db:studio      # Prisma Studioの起動
+pnpm types:generate # Supabase型定義の生成
 ```
 
 ### プロジェクト構造
@@ -229,6 +288,9 @@ pnpm install
 
 # Prismaクライアントを再生成
 pnpm db:generate
+
+# Supabase型定義を再生成
+pnpm types:generate
 ```
 
 ### Supabase関連のエラー
