@@ -14,9 +14,7 @@ import type { BoxSize, PlacedItem, SweetItem, BoxType } from "@/types/types"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { PlusCircle, Save, Upload, HelpCircle, Settings, Package, Cloud, Printer } from "lucide-react"
-import TutorialOverlay from "@/components/tutorial-overlay"
-import TutorialButton from "@/components/tutorial-button"
-import { useTutorialTarget } from "@/hooks/use-tutorial-target"
+
 import { useState, useEffect } from "react"
 
 interface WagashiSimulatorContentProps {
@@ -72,16 +70,15 @@ export default function WagashiSimulatorContent({
   // 箱選択モーダルの状態
   const [isBoxSelectionOpen, setIsBoxSelectionOpen] = useState(false)
 
-  // チュートリアルのターゲット要素の参照
-  const selectionAreaRef = useTutorialTarget("select-sweet")
-  const boxAreaRef = useTutorialTarget("drag-drop")
-  const contextMenuRef = useTutorialTarget("context-menu")
-  const productInfoRef = useTutorialTarget("product-info")
-  const settingsRef = useTutorialTarget("settings")
-  const saveLoadRef = useTutorialTarget("save-load")
-  const customerCodeSaveRef = useTutorialTarget("customer-code-save")
-
-  const printRef = useTutorialTarget("print")
+  // 要素の参照
+  const selectionAreaRef = null
+  const boxAreaRef = null
+  const contextMenuRef = null
+  const productInfoRef = null
+  const settingsRef = null
+  const saveLoadRef = null
+  const customerCodeSaveRef = null
+  const printRef = null
 
   // 商品変更通知を受け取る
   useEffect(() => {
@@ -270,7 +267,7 @@ export default function WagashiSimulatorContent({
                   >
                     <Settings className="h-4 w-4" />
                   </Button>
-                  <TutorialButton />
+
                   <Button
                     variant="ghost"
                     size="sm"
@@ -403,7 +400,7 @@ export default function WagashiSimulatorContent({
                 >
                   <Settings className="h-5 w-5" />
                 </Button>
-                <TutorialButton />
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -562,7 +559,7 @@ export default function WagashiSimulatorContent({
           currentBoxType={selectedBoxType}
         />
 
-        <TutorialOverlay />
+
       </div>
     </TooltipProvider>
   )

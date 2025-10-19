@@ -8,7 +8,7 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import type { BoxSize, PlacedItem, BoxType } from "@/types/types"
 import saveAs from "file-saver"
-import { TutorialProvider } from "@/contexts/tutorial-context"
+
 import WagashiSimulatorContent from "@/components/wagashi-simulator-content"
 import MaintenanceMode from "@/components/maintenance-mode"
 import { useMaintenanceMode } from "@/hooks/use-maintenance-mode"
@@ -238,8 +238,7 @@ export default function WagashiSimulator() {
   // 通常のシミュレーター画面を表示（読み込み中も含む）
   return (
     <DndProvider backend={HTML5Backend}>
-      <TutorialProvider>
-        <div className="relative">
+      <div className="relative">
           {/* 店舗情報とナビゲーション */}
           <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -312,8 +311,7 @@ export default function WagashiSimulator() {
             customerCode={customerCode}
             expiresAt={expiresAt}
           />
-        </div>
-      </TutorialProvider>
+      </div>
     </DndProvider>
   )
 }
