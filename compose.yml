@@ -13,8 +13,8 @@ services:
     command: sh -c "pnpm db:generate && pnpm dev"
     stdin_open: true
     tty: true
-    depends_on:
-      - postgres
+    # depends_on:
+    #   - postgres
 
   # postgres:
   #   image: postgres:17
