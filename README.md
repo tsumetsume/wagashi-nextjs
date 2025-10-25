@@ -21,6 +21,8 @@
 
 ## セットアップ
 
+**重要**: このアプリケーションはSupabaseが必須です。Docker buildを実行する前に、必ずSupabaseの設定を完了してください。
+
 ### 1. リポジトリのクローン
 
 ```bash
@@ -28,41 +30,7 @@ git clone <repository-url>
 cd wagashi
 ```
 
-### 2. 環境変数の設定
-
-```bash
-cp env.example .env
-```
-
-`.env`ファイルを編集して、必要に応じて設定を変更してください。
-
-### 3. 開発環境のセットアップ
-
-#### 方法A: セットアップスクリプトを使用（推奨）
-
-```bash
-docker compose run --rm app sh ./setup.sh
-```
-
-#### 方法B: 手動セットアップ
-
-```bash
-# 依存関係のインストール
-pnpm install
-
-# Prismaクライアントの生成
-pnpm db:generate
-
-# データベースのマイグレーション
-pnpm db:push
-
-# シードデータの投入
-pnpm db:seed
-```
-
-### 4. Supabaseのセットアップ（画像ストレージ用）
-
-#### 4.1 Supabaseプロジェクトの作成
+### 2. Supabaseプロジェクトの作成（必須）
 
 1. [Supabase](https://supabase.com)にアクセスしてアカウントを作成
 2. 新しいプロジェクトを作成
@@ -72,7 +40,7 @@ pnpm db:seed
    - API Keys（anon public key と service_role key）
    - Database URL（Settings > Database > Connection string > URI）
 
-#### 4.2 ストレージバケットの作成
+### 3. ストレージバケットの作成
 
 1. Supabaseダッシュボードで「Storage」に移動
 2. 「Create a new bucket」をクリック
@@ -80,7 +48,7 @@ pnpm db:seed
 4. 「Public bucket」にチェックを入れる
 5. 「Create bucket」をクリック
 
-#### 4.3 RLS（Row Level Security）ポリシーの設定
+### 4. RLS（Row Level Security）ポリシーの設定
 
 Supabaseダッシュボードの「SQL Editor」で以下のクエリを実行：
 
@@ -97,9 +65,13 @@ CREATE POLICY "Authenticated users can delete" ON storage.objects
 FOR DELETE USING (bucket_id = 'images' AND auth.role() = 'authenticated');
 ```
 
-#### 4.4 環境変数の設定
+### 5. 環境変数の設定
 
-`.env.local`ファイルに以下のSupabase設定を追加：
+```bash
+cp env.example .env
+```
+
+`.env`ファイルを編集して、Supabaseの設定情報を追加：
 
 ```env
 # Database (Supabase PostgreSQL)
@@ -108,7 +80,7 @@ DATABASE_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-
 # Direct connection to the database. Used for migrations
 DIRECT_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
 
-# Supabase
+# Supabase（必須）
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
@@ -119,16 +91,52 @@ NEXTAUTH_SECRET="your-secret-key-here-change-this-in-production"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-**注意**: 
+**重要**: 
 - `[YOUR-PASSWORD]`をSupabaseプロジェクト作成時に設定したデータベースパスワードに置き換え
 - `[YOUR-PROJECT-REF]`をプロジェクトリファレンスに置き換え
-- その他の値も実際の値に置き換えてください
+- **すべての値を実際の値に置き換えてから次のステップに進んでください**
 
 **接続方式の説明**:
 - `DATABASE_URL`: 接続プール経由（通常のアプリケーション処理用）
 - `DIRECT_URL`: 直接接続（マイグレーションやスキーマ変更用）
 
-#### 4.5 データベーススキーマの作成
+### 6. 開発環境のセットアップ
+
+**注意**: 環境変数の設定が完了してから実行してください。
+
+#### 方法A: Dockerを使用（推奨）
+
+```bash
+# Docker Composeでビルドと起動
+docker compose up --build
+```
+
+#### 方法B: セットアップスクリプトを使用
+
+```bash
+docker compose run --rm app sh ./setup.sh
+```
+
+#### 方法C: 手動セットアップ
+
+```bash
+# 依存関係のインストール
+pnpm install
+
+# Prismaクライアントの生成
+pnpm db:generate
+
+# データベースのマイグレーション
+pnpm db:push
+
+# シードデータの投入
+pnpm db:seed
+
+# 開発サーバーの起動
+pnpm dev
+```
+
+### 7. データベーススキーマの作成
 
 Supabaseデータベースにテーブルを作成：
 
@@ -143,7 +151,7 @@ pnpm db:push
 pnpm db:seed
 ```
 
-#### 4.6 既存データの移行（オプション）
+### 8. 既存データの移行（オプション）
 
 既存のローカルデータベースからSupabaseに移行する場合：
 
@@ -154,29 +162,37 @@ DATABASE_URL="your-supabase-database-url" \
 tsx scripts/migrate-to-supabase.ts
 ```
 
-### 5. アプリケーションの起動
-
-#### Supabaseを使用する場合（推奨）
-
-```bash
-# 依存関係のインストール
-pnpm install
-
-# 開発サーバーの起動
-pnpm dev
-```
-
-#### ローカルPostgreSQLを使用する場合
-
-```bash
-# Docker Composeでローカル環境を起動
-docker-compose up -d
-```
-
-### 6. アプリケーションにアクセス
+### 9. アプリケーションにアクセス
 
 - メインアプリ: http://localhost:3000
 - 管理画面: http://localhost:3000/admin
+
+## 環境変数が未設定の場合のエラー対処
+
+もし`docker compose build`時に以下のようなエラーが発生した場合：
+
+```
+Error: supabaseUrl is required.
+```
+
+これはSupabaseの環境変数が設定されていないことが原因です。以下の手順で解決してください：
+
+1. **環境変数の確認**: `.env`ファイルにSupabaseの設定がすべて記載されているか確認
+2. **値の設定**: 空の値（`""`）ではなく、実際のSupabaseプロジェクトの値を設定
+3. **再ビルド**: 環境変数を設定後、`docker compose up --build`を再実行
+
+### 最小限の環境変数設定例
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_PROJECT_ID=your-project-id
+DATABASE_URL=postgresql://postgres.your-project:password@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.your-project:password@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres
+NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_URL=http://localhost:3000
+```
 
 ## 管理画面
 
@@ -293,13 +309,32 @@ pnpm db:generate
 pnpm types:generate
 ```
 
+### Docker Build エラー
+
+#### `Error: supabaseUrl is required.` エラー
+
+このエラーはビルド時にSupabaseの環境変数が設定されていない場合に発生します。
+
+**解決方法**:
+1. `.env`ファイルが存在し、すべてのSupabase環境変数が設定されていることを確認
+2. 環境変数の値が空文字列（`""`）ではなく、実際の値が設定されていることを確認
+3. 以下のコマンドで環境変数を確認：
+   ```bash
+   cat .env | grep SUPABASE
+   ```
+4. 環境変数を正しく設定後、コンテナを再ビルド：
+   ```bash
+   docker compose down
+   docker compose up --build
+   ```
+
 ### Supabase関連のエラー
 
 #### 画像アップロードエラー
 
 1. **環境変数の確認**
    ```bash
-   # .env.localファイルでSupabase設定を確認
+   # .envファイルでSupabase設定を確認
    NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
