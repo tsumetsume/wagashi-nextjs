@@ -1,22 +1,22 @@
-# Product Overview
+# プロダクト概要
 
-This is a **Wagashi (Japanese Confectionery) Box Simulator** - a web application that allows users to simulate arranging traditional Japanese sweets in gift boxes.
+これは**和菓子ボックスシミュレーター**です - 伝統的な日本の和菓子をギフトボックスに配置するシミュレーションを行うWebアプリケーションです。
 
-## Core Features
+## 主要機能
 
-- **Interactive Box Layout**: Drag-and-drop interface for placing wagashi items in various box sizes
-- **Store Management**: Multi-store support with individual inventory tracking
-- **Admin Dashboard**: Complete management system for products, categories, inventory, and user accounts
-- **Customer Code System**: Save and share box layouts via unique customer codes
-- **Print Functionality**: Generate printable layouts for order fulfillment
-- **Real-time Stock Management**: Track inventory levels across different store locations
+- **インタラクティブなボックスレイアウト**: 様々なボックスサイズに和菓子アイテムを配置するドラッグ&ドロップインターフェース
+- **店舗管理**: 個別の在庫追跡を伴うマルチ店舗サポート
+- **管理者ダッシュボード**: 商品、カテゴリ、在庫、ユーザーアカウントの完全な管理システム
+- **お客様コードシステム**: 固有のお客様コードでボックスレイアウトを保存・共有
+- **印刷機能**: 注文履行のための印刷可能なレイアウト生成
+- **リアルタイム在庫管理**: 異なる店舗ロケーション間での在庫レベル追跡
 
-## Target Users
+## 対象ユーザー
 
-- **Customers**: Create custom wagashi gift box arrangements
-- **Store Staff**: Manage inventory and fulfill customer orders
-- **Administrators**: Oversee product catalog, stores, and system settings
+- **お客様**: カスタム和菓子ギフトボックスの配置を作成
+- **店舗スタッフ**: 在庫管理とお客様注文の履行
+- **管理者**: 商品カタログ、店舗、システム設定の監督
 
-## Business Context
+## ビジネスコンテキスト
 
-The application serves traditional Japanese confectionery stores that offer custom gift box services, allowing customers to visualize their selections before purchase and enabling staff to efficiently manage multi-location inventory.
+このアプリケーションは、カスタムギフトボックスサービスを提供する伝統的な和菓子店にサービスを提供し、お客様が購入前に選択を視覚化でき、スタッフが複数拠点の在庫を効率的に管理できるようにします。
