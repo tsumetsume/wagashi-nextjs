@@ -104,22 +104,12 @@ NEXTAUTH_URL="http://localhost:3000"
 
 **注意**: 環境変数の設定が完了してから実行してください。
 
-#### 方法A: Dockerを使用（推奨）
+#### 手動セットアップ
 
 ```bash
-# Docker Composeでビルドと起動
-docker compose up --build
-```
+# コンテナ内で実行
+docker compose run --rm app bash
 
-#### 方法B: セットアップスクリプトを使用
-
-```bash
-docker compose run --rm app sh ./setup.sh
-```
-
-#### 方法C: 手動セットアップ
-
-```bash
 # 依存関係のインストール
 pnpm install
 
@@ -132,8 +122,8 @@ pnpm db:push
 # シードデータの投入
 pnpm db:seed
 
-# 開発サーバーの起動
-pnpm dev
+# コンテナを抜ける
+eixt
 ```
 
 ### 7. データベーススキーマの作成
