@@ -355,6 +355,118 @@ pnpm remove @supabase/supabase-js
 pnpm add @supabase/supabase-js
 ```
 
+#### PostgreSQL 接続がブロックされる/タイムアウトする場合
+
+企業ネットワークや厳格なファイアウォール環境では、SupabaseのPostgreSQL（直通: 5432, プーラー: 6543）への外向き通信がブロックされ、`pnpm db:push` や Prisma Studio、アプリ実行時にタイムアウト/接続失敗することがあります。以下を確認してください。
+
+1. **接続ポートを開放**
+   - 可能であればネットワーク管理者に依頼し、以下の外向き通信を許可:
+     - 5432/tcp（ダイレクト接続）
+     - 6543/tcp（接続プール PgBouncer/Supavisor 経由・推奨）
+   - 接続先ホストは `.env` の `DATABASE_URL`/`DIRECT_URL` に記載の Supabase ホスト（例: `aws-0-ap-northeast-1.pooler.supabase.com`）。
+
+2. **疎通確認（タイムアウト切り分け）**
+   - ネットワーク越しに TLS で握手できるか確認:
+     ```bash
+     # プール経由（推奨 6543）
+     openssl s_client -connect aws-0-ap-northeast-1.pooler.supabase.com:6543 -brief </dev/null
+     # 直通（5432）
+     openssl s_client -connect aws-0-ap-northeast-1.pooler.supabase.com:5432 -brief </dev/null
+     ```
+   - 成功すれば TLS ハンドシェイク情報が表示、ブロック時はタイムアウト/接続拒否になります。
+
+3. **接続文字列のSSL/プール設定を有効化（重要）**
+   - 企業ネットワークでは SSL 必須のことが多いため、`sslmode=require` を付け、アプリ処理はプール経由を使用してください。
+   - `.env` の最小例（置換必須）:
+     ```env
+     # アプリ処理用（プール経由）
+     DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require"
+     # マイグレーション/スキーマ変更用（直通）。直通がブロックされる場合は一時的に許可を依頼
+     DIRECT_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
+     ```
+   - Prisma を使用する場合はプール経由での長時間クエリが苦手なため、マイグレーションは基本 `DIRECT_URL` を使用します。直通が使えない場合はネットワーク例外許可を依頼してください。
+
+4. **タイムアウトの調整（任意）**
+   - ネットワークが不安定な場合、接続/アイドルタイムアウトを延長:
+     ```env
+     # Prisma（例）
+     DATABASE_URL="...&pgbouncer=true&sslmode=require&connection_limit=5&connect_timeout=15"
+     ```
+
+5. **プロキシ/WSL2/ローカル環境の考慮**
+   - **HTTP/HTTPS プロキシのみ**では PostgreSQL の TCP は通りません。ネットワーク側の TCP 許可が必要です。
+   - **WSL2/Windows ファイアウォール**で `docker`, `node`, `pnpm` 等の外向き通信が許可されているか確認。
+   - 一時回避として、別ネットワーク（テザリング/自宅回線/VPN）で疎通できるか試し、ネットワーク要因かを切り分け。
+
+6. **どうしてもポートが開けられない場合の代替案**
+   - 短期的にはマイグレーション・シード等は接続可能な環境で実行し、本番はアプリからプール経由（6543/SSL）でのみアクセス。
+   - ネットワークポリシー上の恒久対応は管理者にご相談ください。
+
+### Supabase の IP 制限（Allowlist）設定
+
+Supabase ではデータベースへのアクセス元 IP を制限できます。企業ネットワークや本番環境でのセキュリティ強化に有効ですが、誤設定すると自分自身が接続できなくなるため、必ず現在の接続元 IP を先に登録してから有効化してください。
+
+#### 前提
+- IP 制限は有料プランで利用可能な場合があります。プロジェクトのプラン/機能可用性を事前に確認してください。
+- 制限対象は以下を個別に有効化できます：
+  - 直通 PostgreSQL（5432）
+  - 接続プール PgBouncer/Supavisor（6543）
+
+#### 設定場所（ダッシュボード）
+1. Supabase ダッシュボードにログイン
+2. 対象プロジェクトを選択
+3. `Settings` > `Database` > `Network`（もしくは `Settings` > `Network restrictions`）
+4. `Restrict access to Postgres`（5432）と `Restrict access to PgBouncer`（6543）を必要に応じて有効化
+5. `Allowed IP addresses / CIDR` に許可したい送信元を追加
+
+#### 追加する IP/CIDR の例
+- 単一 IPv4: `203.0.113.10/32`
+- 単一 IPv6: `2001:db8::1234/128`
+- 範囲指定（例: 社内 NAT 範囲）: `203.0.113.0/24`
+
+```bash
+# 自分の現在のグローバルIPを確認（IPv4）
+curl -4 ifconfig.me
+# IPv6 も必要なら
+curl -6 ifconfig.me
+```
+
+#### 環境別の登録ガイド
+- **ローカル開発/WSL2**: 自宅/会社のグローバル IP を `/32` で登録。動的 IP の場合は頻繁に更新が必要。
+- **Docker/社内プロキシ**: 実際に外に出る egress NAT の IP を登録（開発端末のローカル IP では不可）。
+- **Vercel/Netlify 等のホスティング**: プラットフォームの固定 egress IP 範囲を登録。Vercel は[固定 egress アドオン]等の利用を検討。
+- **CI/CD（GitHub Actions 等）**: 固定 egress IP がない場合が多いです。マイグレーションは別経路（VPN/踏み台）で実施、または一時的に IP 制限を解除して短時間で完了させる運用を検討。
+
+#### 安全な切り替え手順（ロックアウト防止）
+1. まず現在の接続元 IP（自分/本番/監視/ジョブ）を全て登録
+2. 既存接続の動作確認（`openssl s_client` や `psql` で疎通）
+3. `Restrict access` を有効化
+4. 別セッションで接続確認（Next.js アプリ、Prisma、Prisma Studio、`pnpm db:push`）
+5. 問題なければ適用完了。問題があれば即座にロールバック
+
+#### 検証コマンド（許可結果の確認）
+```bash
+# PgBouncer（6543）
+openssl s_client -connect aws-0-ap-northeast-1.pooler.supabase.com:6543 -brief </dev/null
+# Postgres 直通（5432）
+openssl s_client -connect aws-0-ap-northeast-1.pooler.supabase.com:5432 -brief </dev/null
+```
+- 失敗時の代表例: `no pg_hba.conf entry for host ...` またはタイムアウト。IP 許可に漏れがないか確認。
+
+#### Prisma/接続文字列の注意
+- IP 制限により接続可否が決まるだけで、接続文字列の形式自体は変わりません。引き続き `sslmode=require` を強く推奨します。
+- `.env` 例:
+  ```env
+  DATABASE_URL="postgresql://...:6543/postgres?pgbouncer=true&sslmode=require"
+  DIRECT_URL="postgresql://...:5432/postgres?sslmode=require"
+  ```
+
+#### よくある落とし穴
+- 自分の IP を登録する前に `Restrict` を有効化して接続不能になる
+- PgBouncer 側のみ許可/制限して直通（またはその逆）を失念
+- 動的 IP 環境での更新漏れ
+- CI/CD の egress IP が固定でない前提を見落とし
+
 ## デプロイ
 
 ### 本番環境での注意事項
