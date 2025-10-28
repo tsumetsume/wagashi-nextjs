@@ -68,7 +68,7 @@ FOR DELETE USING (bucket_id = 'images' AND auth.role() = 'authenticated');
 ### 5. 環境変数の設定
 
 ```bash
-cp env.example .env
+cp env.example .env.local
 ```
 
 `.env`ファイルを編集して、Supabaseの設定情報を追加：
