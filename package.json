@@ -17,7 +17,8 @@
     "db:test": "tsx scripts/test-db-connection.ts",
     "dev:local": "USE_LOCAL_DB=true next dev",
     "db:local:setup": "USE_LOCAL_DB=true pnpm db:generate && USE_LOCAL_DB=true pnpm db:push && USE_LOCAL_DB=true pnpm db:seed",
-    "db:local:reset": "USE_LOCAL_DB=true pnpm db:push --force-reset && USE_LOCAL_DB=true pnpm db:seed"
+    "db:local:reset": "USE_LOCAL_DB=true pnpm db:push --force-reset && USE_LOCAL_DB=true pnpm db:seed",
+    "storage:local:clean": "rm -rf public/uploads/products/* && echo 'ローカル画像ストレージをクリーンアップしました'"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

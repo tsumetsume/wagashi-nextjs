@@ -57,10 +57,11 @@ cp env.example .env.local
 - 高速なレスポンス
 - 開発データの完全な制御
 - ネットワーク制限の影響なし
+- 画像もローカルファイルシステムに保存（public/uploads/products/）
 
 #### オプション B: Supabase PostgreSQL（本番用）
 
-本番環境や、Supabaseの機能（Storage、Auth等）を使用する場合はこちらを選択してください。
+本番環境や、Supabaseの機能（Storage、Auth等）を使用する場合はこちらを選択してください。画像はSupabase Storageに保存されます。
 
 ### 3. Supabaseプロジェクトの作成（Supabase使用時のみ）
 
@@ -236,15 +237,15 @@ tsx scripts/migrate-to-supabase.ts
 - メインアプリ: http://localhost:3000
 - 管理画面: http://localhost:3000/admin
 
-## データベース環境の切り替え
+## データベース・ストレージ環境の切り替え
 
 ### 自動切り替えスクリプト
 
 ```bash
-# ローカルPostgreSQLに切り替え
+# ローカルPostgreSQL + ローカルファイルストレージに切り替え
 ./scripts/switch-db.sh local
 
-# Supabaseに切り替え
+# Supabase PostgreSQL + Supabase Storageに切り替え
 ./scripts/switch-db.sh supabase
 ```
 
@@ -253,12 +254,19 @@ tsx scripts/migrate-to-supabase.ts
 `.env.local`ファイルの`USE_LOCAL_DB`を変更：
 
 ```env
-# ローカルPostgreSQL使用
+# ローカルPostgreSQL + ローカルファイルストレージ使用
 USE_LOCAL_DB=true
 
-# Supabase使用
+# Supabase PostgreSQL + Supabase Storage使用
 USE_LOCAL_DB=false
 ```
+
+### ストレージの動作
+
+| 環境 | データベース | 画像ストレージ | 保存場所 |
+|------|-------------|---------------|----------|
+| ローカル | PostgreSQL (Docker) | ローカルファイルシステム | `public/uploads/products/` |
+| Supabase | Supabase PostgreSQL | Supabase Storage | `images` バケット |
 
 ### Docker Composeファイルの使い分け
 
@@ -374,6 +382,7 @@ pnpm db:studio              # Prisma Studioの起動
 # ローカルPostgreSQL専用
 pnpm db:local:setup         # ローカルDBの初期セットアップ
 pnpm db:local:reset         # ローカルDBのリセット
+pnpm storage:local:clean    # ローカル画像ストレージのクリーンアップ
 
 # Supabase専用
 pnpm types:generate         # Supabase型定義の生成
@@ -460,9 +469,30 @@ pnpm types:generate
    docker compose up --build
    ```
 
-### Supabase関連のエラー
+### ストレージ関連のエラー
 
-#### 画像アップロードエラー
+#### ローカルストレージエラー
+
+1. **ディレクトリの権限確認**
+   ```bash
+   # アップロードディレクトリの作成・権限設定
+   mkdir -p public/uploads/products
+   chmod 755 public/uploads/products
+   ```
+
+2. **ディスク容量の確認**
+   ```bash
+   # 利用可能な容量を確認
+   df -h .
+   ```
+
+3. **ローカル画像のクリーンアップ**
+   ```bash
+   # ローカル画像ストレージをクリーンアップ
+   pnpm storage:local:clean
+   ```
+
+#### Supabase Storageエラー
 
 1. **環境変数の確認**
    ```bash
@@ -478,6 +508,16 @@ pnpm types:generate
 
 3. **RLSポリシーの確認**
    - Storage > Policies で適切なポリシーが設定されていることを確認
+
+#### ストレージ切り替え時の注意
+
+1. **画像の移行**
+   - ローカル ↔ Supabase 切り替え時、既存の画像は自動移行されません
+   - 必要に応じて手動で画像を再アップロードしてください
+
+2. **URL形式の違い**
+   - ローカル: `http://localhost:3000/uploads/products/filename.jpg`
+   - Supabase: `https://project.supabase.co/storage/v1/object/public/images/products/filename.jpg`
 
 #### 接続エラー
 
