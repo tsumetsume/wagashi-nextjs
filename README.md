@@ -21,7 +21,12 @@
 
 ## セットアップ
 
-**重要**: このアプリケーションはSupabaseが必須です。Docker buildを実行する前に、必ずSupabaseの設定を完了してください。
+このアプリケーションは2つのデータベース環境をサポートしています：
+
+1. **Supabase PostgreSQL**（本番推奨・デフォルト）
+2. **ローカルPostgreSQL**（開発用・Docker Compose）
+
+環境変数 `USE_LOCAL_DB` で切り替えが可能です。
 
 ### 1. リポジトリのクローン
 
@@ -30,7 +35,34 @@ git clone <repository-url>
 cd wagashi
 ```
 
-### 2. Supabaseプロジェクトの作成（必須）
+### 2. データベース環境の選択
+
+#### オプション A: ローカルPostgreSQL（開発用・推奨）
+
+ローカル開発では、Docker ComposeでPostgreSQLコンテナを使用することを推奨します。
+
+```bash
+# 環境変数ファイルをコピー
+cp env.example .env.local
+
+# ローカルPostgreSQLに切り替え
+./scripts/switch-db.sh local
+
+# または手動で設定
+# .env.localで USE_LOCAL_DB=true に設定
+```
+
+**ローカルPostgreSQLの利点:**
+- インターネット接続不要
+- 高速なレスポンス
+- 開発データの完全な制御
+- ネットワーク制限の影響なし
+
+#### オプション B: Supabase PostgreSQL（本番用）
+
+本番環境や、Supabaseの機能（Storage、Auth等）を使用する場合はこちらを選択してください。
+
+### 3. Supabaseプロジェクトの作成（Supabase使用時のみ）
 
 1. [Supabase](https://supabase.com)にアクセスしてアカウントを作成
 2. 新しいプロジェクトを作成
@@ -40,7 +72,7 @@ cd wagashi
    - API Keys（anon public key と service_role key）
    - Database URL（Settings > Database > Connection string > URI）
 
-### 3. ストレージバケットの作成
+### 4. ストレージバケットの作成（Supabase使用時のみ）
 
 1. Supabaseダッシュボードで「Storage」に移動
 2. 「Create a new bucket」をクリック
@@ -48,7 +80,7 @@ cd wagashi
 4. 「Public bucket」にチェックを入れる
 5. 「Create bucket」をクリック
 
-### 4. RLS（Row Level Security）ポリシーの設定
+### 5. RLS（Row Level Security）ポリシーの設定（Supabase使用時のみ）
 
 Supabaseダッシュボードの「SQL Editor」で以下のクエリを実行：
 
@@ -65,19 +97,45 @@ CREATE POLICY "Authenticated users can delete" ON storage.objects
 FOR DELETE USING (bucket_id = 'images' AND auth.role() = 'authenticated');
 ```
 
-### 5. 環境変数の設定
+### 6. 環境変数の設定
+
+#### ローカルPostgreSQL使用時
 
 ```bash
+# 環境変数ファイルをコピー（まだの場合）
 cp env.example .env.local
+
+# ローカルPostgreSQLに切り替え
+./scripts/switch-db.sh local
 ```
 
-`.env`ファイルを編集して、Supabaseの設定情報を追加：
+`.env.local`の最小設定例：
+```env
+# Database Configuration
+USE_LOCAL_DB=true
+LOCAL_DATABASE_URL="postgresql://wagashi_user:wagashi_password@postgres:5432/wagashi_simulator"
+
+# NextAuth.js
+NEXTAUTH_SECRET="your-secret-key-here-change-this-in-production"
+NEXTAUTH_URL="http://localhost:3000"
+
+# App
+NODE_ENV="development"
+```
+
+#### Supabase使用時
+
+```bash
+# Supabaseに切り替え
+./scripts/switch-db.sh supabase
+```
+
+`.env.local`にSupabaseの設定情報を追加：
 
 ```env
-# Database (Supabase PostgreSQL)
-# Connect to Supabase via connection pooling
+# Database Configuration
+USE_LOCAL_DB=false
 DATABASE_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-# Direct connection to the database. Used for migrations
 DIRECT_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
 
 # Supabase（必須）
@@ -100,48 +158,69 @@ NEXTAUTH_URL="http://localhost:3000"
 - `DATABASE_URL`: 接続プール経由（通常のアプリケーション処理用）
 - `DIRECT_URL`: 直接接続（マイグレーションやスキーマ変更用）
 
-### 6. 開発環境のセットアップ
+### 7. 開発環境のセットアップ
+
+#### ローカルPostgreSQL使用時
+
+```bash
+# PostgreSQLコンテナを含む開発環境を起動
+docker compose -f compose.local.yml up -d
+
+# データベースのセットアップ
+pnpm db:local:setup
+
+# 開発サーバーの起動
+pnpm dev:local
+```
+
+または、一括でセットアップ：
+
+```bash
+# PostgreSQLコンテナと開発サーバーを同時起動
+docker compose -f compose.local.yml up
+```
+
+#### Supabase使用時
 
 **注意**: 環境変数の設定が完了してから実行してください。
 
-#### 手動セットアップ
-
 ```bash
-# コンテナ内で実行
+# 通常の開発環境を起動
+docker compose up
+
+# または手動セットアップ
 docker compose run --rm app bash
-
-# 依存関係のインストール
 pnpm install
-
-# Prismaクライアントの生成
 pnpm db:generate
-
-# データベースのマイグレーション
 pnpm db:push
-
-# シードデータの投入
 pnpm db:seed
-
-# コンテナを抜ける
-eixt
+exit
 ```
 
-### 7. データベーススキーマの作成
+### 8. データベーススキーマの作成
 
-Supabaseデータベースにテーブルを作成：
+#### ローカルPostgreSQL使用時
 
 ```bash
-# Prismaクライアントの生成
+# ローカルデータベースのセットアップ（一括）
+pnpm db:local:setup
+
+# または個別実行
 pnpm db:generate
+USE_LOCAL_DB=true pnpm db:push
+USE_LOCAL_DB=true pnpm db:seed
+```
 
-# Supabaseデータベースにスキーマを適用
+#### Supabase使用時
+
+```bash
+# Supabaseデータベースにテーブルを作成
+pnpm db:generate
 pnpm db:push
-
-# 初期データの投入
 pnpm db:seed
 ```
 
-### 8. 既存データの移行（オプション）
+### 9. 既存データの移行（オプション）
 
 既存のローカルデータベースからSupabaseに移行する場合：
 
@@ -152,10 +231,60 @@ DATABASE_URL="your-supabase-database-url" \
 tsx scripts/migrate-to-supabase.ts
 ```
 
-### 9. アプリケーションにアクセス
+### 10. アプリケーションにアクセス
 
 - メインアプリ: http://localhost:3000
 - 管理画面: http://localhost:3000/admin
+
+## データベース環境の切り替え
+
+### 自動切り替えスクリプト
+
+```bash
+# ローカルPostgreSQLに切り替え
+./scripts/switch-db.sh local
+
+# Supabaseに切り替え
+./scripts/switch-db.sh supabase
+```
+
+### 手動切り替え
+
+`.env.local`ファイルの`USE_LOCAL_DB`を変更：
+
+```env
+# ローカルPostgreSQL使用
+USE_LOCAL_DB=true
+
+# Supabase使用
+USE_LOCAL_DB=false
+```
+
+### Docker Composeファイルの使い分け
+
+```bash
+# ローカルPostgreSQL（PostgreSQLコンテナ含む）
+docker compose -f compose.local.yml up
+
+# Supabase（アプリケーションのみ）
+docker compose up
+
+# 本番環境
+docker compose -f compose.production.yml up
+```
+
+### データベース固有のコマンド
+
+```bash
+# ローカルPostgreSQL用
+pnpm dev:local              # ローカルDB使用で開発サーバー起動
+pnpm db:local:setup         # ローカルDBの初期セットアップ
+pnpm db:local:reset         # ローカルDBのリセット
+
+# Supabase用
+pnpm types:generate         # Supabase型定義生成
+pnpm migrate:supabase       # Supabaseへのデータ移行
+```
 
 ## 環境変数が未設定の場合のエラー対処
 
@@ -220,23 +349,36 @@ NEXTAUTH_URL=http://localhost:3000
 
 ### 利用可能なスクリプト
 
+#### 基本コマンド
+
 ```bash
 # 開発サーバーの起動
-pnpm dev
+pnpm dev                    # 通常の開発サーバー
+pnpm dev:local              # ローカルDB使用で開発サーバー
 
-# ビルド
-pnpm build
+# ビルド・本番
+pnpm build                  # 本番用ビルド
+pnpm start                  # 本番サーバーの起動
+```
 
-# 本番サーバーの起動
-pnpm start
+#### データベース関連
 
-# データベース関連
-pnpm db:generate    # Prismaクライアントの生成
-pnpm db:push        # データベーススキーマの同期
-pnpm db:migrate     # マイグレーションの実行
-pnpm db:seed        # シードデータの投入
-pnpm db:studio      # Prisma Studioの起動
-pnpm types:generate # Supabase型定義の生成
+```bash
+# 共通
+pnpm db:generate            # Prismaクライアントの生成
+pnpm db:push                # データベーススキーマの同期
+pnpm db:migrate             # マイグレーションの実行
+pnpm db:seed                # シードデータの投入
+pnpm db:studio              # Prisma Studioの起動
+
+# ローカルPostgreSQL専用
+pnpm db:local:setup         # ローカルDBの初期セットアップ
+pnpm db:local:reset         # ローカルDBのリセット
+
+# Supabase専用
+pnpm types:generate         # Supabase型定義の生成
+pnpm migrate:supabase       # Supabaseへのデータ移行
+pnpm db:test                # データベース接続テスト
 ```
 
 ### プロジェクト構造

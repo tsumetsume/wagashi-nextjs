@@ -14,7 +14,10 @@
     "db:studio": "prisma studio",
     "migrate:supabase": "tsx scripts/migrate-to-supabase.ts",
     "types:generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > lib/database.types.ts",
-    "db:test": "tsx scripts/test-db-connection.ts"
+    "db:test": "tsx scripts/test-db-connection.ts",
+    "dev:local": "USE_LOCAL_DB=true next dev",
+    "db:local:setup": "USE_LOCAL_DB=true pnpm db:generate && USE_LOCAL_DB=true pnpm db:push && USE_LOCAL_DB=true pnpm db:seed",
+    "db:local:reset": "USE_LOCAL_DB=true pnpm db:push --force-reset && USE_LOCAL_DB=true pnpm db:seed"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
