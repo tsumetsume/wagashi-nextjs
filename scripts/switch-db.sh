@@ -29,19 +29,18 @@ case $DB_TYPE in
         # USE_LOCAL_DBをtrueに設定
         sed -i 's/USE_LOCAL_DB=false/USE_LOCAL_DB=true/' "$ENV_FILE"
         
-        # DATABASE_URLとDIRECT_URLをローカル用に変更
-        # 既存のSupabase URLをコメントアウト
-        sed -i 's/^DATABASE_URL="postgresql:\/\/postgres\./#DATABASE_URL="postgresql:\/\/postgres\./' "$ENV_FILE"
-        sed -i 's/^DIRECT_URL="postgresql:\/\/postgres\./#DIRECT_URL="postgresql:\/\/postgres\./' "$ENV_FILE"
+        # Supabase URLをコメントアウト（postgres.で始まる行）
+        sed -i '/^DATABASE_URL="postgresql:\/\/postgres\./s/^/#/' "$ENV_FILE"
+        sed -i '/^DIRECT_URL="postgresql:\/\/postgres\./s/^/#/' "$ENV_FILE"
         
-        # ローカルDB用のURLを有効化（コメントアウトを解除）
-        sed -i 's/^#DATABASE_URL="postgresql:\/\/wagashi_user/DATABASE_URL="postgresql:\/\/wagashi_user/' "$ENV_FILE"
-        sed -i 's/^#DIRECT_URL="postgresql:\/\/wagashi_user/DIRECT_URL="postgresql:\/\/wagashi_user/' "$ENV_FILE"
+        # ローカルDB用のURLのコメントアウトを解除（wagashi_userで始まる行）
+        sed -i '/^#DATABASE_URL="postgresql:\/\/wagashi_user/s/^#//' "$ENV_FILE"
+        sed -i '/^#DIRECT_URL="postgresql:\/\/wagashi_user/s/^#//' "$ENV_FILE"
         
         # ローカルDB用のURLが存在しない場合は追加
-        if ! grep -q 'DATABASE_URL="postgresql://wagashi_user' "$ENV_FILE"; then
+        if ! grep -q 'postgresql://wagashi_user' "$ENV_FILE"; then
             echo '' >> "$ENV_FILE"
-            echo '# ローカルPostgreSQL設定' >> "$ENV_FILE"
+            echo '# ローカルPostgreSQL設定（切り替え時に有効化）' >> "$ENV_FILE"
             echo 'DATABASE_URL="postgresql://wagashi_user:wagashi_password@postgres:5432/wagashi_simulator"' >> "$ENV_FILE"
             echo 'DIRECT_URL="postgresql://wagashi_user:wagashi_password@postgres:5432/wagashi_simulator"' >> "$ENV_FILE"
         fi
@@ -56,13 +55,13 @@ case $DB_TYPE in
         # USE_LOCAL_DBをfalseに設定
         sed -i 's/USE_LOCAL_DB=true/USE_LOCAL_DB=false/' "$ENV_FILE"
         
-        # ローカルDB用のURLをコメントアウト
-        sed -i 's/^DATABASE_URL="postgresql:\/\/wagashi_user/#DATABASE_URL="postgresql:\/\/wagashi_user/' "$ENV_FILE"
-        sed -i 's/^DIRECT_URL="postgresql:\/\/wagashi_user/#DIRECT_URL="postgresql:\/\/wagashi_user/' "$ENV_FILE"
+        # ローカルDB用のURLをコメントアウト（wagashi_userで始まる行）
+        sed -i '/^DATABASE_URL="postgresql:\/\/wagashi_user/s/^/#/' "$ENV_FILE"
+        sed -i '/^DIRECT_URL="postgresql:\/\/wagashi_user/s/^/#/' "$ENV_FILE"
         
-        # Supabase URLを有効化（コメントアウトを解除）
-        sed -i 's/^#DATABASE_URL="postgresql:\/\/postgres\./DATABASE_URL="postgresql:\/\/postgres\./' "$ENV_FILE"
-        sed -i 's/^#DIRECT_URL="postgresql:\/\/postgres\./DIRECT_URL="postgresql:\/\/postgres\./' "$ENV_FILE"
+        # Supabase URLのコメントアウトを解除（postgres.で始まる行）
+        sed -i '/^#DATABASE_URL="postgresql:\/\/postgres\./s/^#//' "$ENV_FILE"
+        sed -i '/^#DIRECT_URL="postgresql:\/\/postgres\./s/^#//' "$ENV_FILE"
         
         echo "✅ Supabaseに切り替えました"
         echo "ライブラリをインストール: docker compose -f compose.local.yml run --rm app pnpm install"
