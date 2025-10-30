@@ -155,13 +155,17 @@ NEXTAUTH_URL="http://localhost:3000"
 #### ローカルPostgreSQL使用時
 
 ```bash
+# 1. ローカル環境に切り替え
+./scripts/switch-db.sh local
+
+# 2. 依存関係のインストール
 docker compose -f compose.local.yml run --rm app pnpm install
 
-# データベースのセットアップ
+# 3. データベースのセットアップ
 docker compose -f compose.local.yml run --rm app pnpm db:local:setup
 
-# PostgreSQLコンテナを含む開発環境を起動
-docker compose -f compose.local.yml up -d
+# 4. 開発環境を起動
+docker compose -f compose.local.yml up
 ```
 
 #### Supabase使用時
