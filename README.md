@@ -157,21 +157,11 @@ NEXTAUTH_URL="http://localhost:3000"
 ```bash
 docker compose -f compose.local.yml run --rm app pnpm install
 
+# データベースのセットアップ
+docker compose -f compose.local.yml run -rm app pnpm db:local:setup
+
 # PostgreSQLコンテナを含む開発環境を起動
 docker compose -f compose.local.yml up -d
-
-# データベースのセットアップ
-pnpm db:local:setup
-
-# 開発サーバーの起動
-pnpm dev:local
-```
-
-または、一括でセットアップ：
-
-```bash
-# PostgreSQLコンテナと開発サーバーを同時起動
-docker compose -f compose.local.yml up
 ```
 
 #### Supabase使用時
@@ -189,6 +179,8 @@ pnpm db:generate
 pnpm db:push
 pnpm db:seed
 exit
+
+docker compose -f compose.local.yml up -d
 ```
 
 ### 8. データベーススキーマの作成
@@ -196,6 +188,8 @@ exit
 #### ローカルPostgreSQL使用時
 
 ```bash
+docker compose run --rm app bash
+
 # ローカルデータベースのセットアップ（一括）
 pnpm db:local:setup
 
@@ -208,6 +202,8 @@ USE_LOCAL_DB=true pnpm db:seed
 #### Supabase使用時
 
 ```bash
+docker compose run --rm app bash
+
 # Supabaseデータベースにテーブルを作成
 pnpm db:generate
 pnpm db:push
