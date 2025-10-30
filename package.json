@@ -14,7 +14,11 @@
     "db:studio": "prisma studio",
     "migrate:supabase": "tsx scripts/migrate-to-supabase.ts",
     "types:generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > lib/database.types.ts",
-    "db:test": "tsx scripts/test-db-connection.ts"
+    "db:test": "tsx scripts/test-db-connection.ts",
+    "dev:local": "next dev",
+    "db:local:setup": "pnpm db:generate && pnpm db:push && pnpm db:seed",
+    "db:local:reset": "pnpm db:push --force-reset && pnpm db:seed",
+    "storage:local:clean": "rm -rf public/uploads/products/* && echo 'ローカル画像ストレージをクリーンアップしました'"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

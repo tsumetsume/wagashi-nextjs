@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { supabaseAdmin } from '@/lib/supabase'
+import { deleteImage, getStorageType } from '@/lib/storage'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -17,23 +17,17 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: '画像URLが指定されていません' }, { status: 400 })
     }
 
-    // URLからファイルパスを抽出
-    const url = new URL(imageUrl)
-    const pathParts = url.pathname.split('/')
-    const fileName = pathParts[pathParts.length - 1]
-    const filePath = `products/${fileName}`
+    // ストレージから削除（ローカル or Supabase）
+    const result = await deleteImage(imageUrl)
 
-    // Supabaseストレージから削除
-    const { error } = await supabaseAdmin.storage
-      .from('images')
-      .remove([filePath])
-
-    if (error) {
-      console.error('Supabase delete error:', error)
-      return NextResponse.json({ error: 'ファイルの削除に失敗しました' }, { status: 500 })
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ 
+      success: true,
+      storageType: getStorageType()
+    })
   } catch (error) {
     console.error('Delete error:', error)
     return NextResponse.json({ error: 'ファイルの削除に失敗しました' }, { status: 500 })

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { supabaseAdmin } from '@/lib/supabase'
+import { uploadImage, generateFileName, getStorageType } from '@/lib/storage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,38 +27,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'ファイルサイズは5MB以下にしてください' }, { status: 400 })
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
     // ファイル名の生成
-    const timestamp = Date.now()
-    const extension = file.name.split('.').pop()
-    const fileName = `${timestamp}.${extension}`
+    const fileName = generateFileName(file.name)
 
-    // Supabaseストレージにアップロード
-    const { data, error } = await supabaseAdmin.storage
-      .from('images') // バケット名
-      .upload(`products/${fileName}`, buffer, {
-        contentType: file.type,
-        upsert: false
-      })
+    // ストレージにアップロード（ローカル or Supabase）
+    const result = await uploadImage(file, fileName)
 
-    if (error) {
-      console.error('Supabase upload error:', error)
-      return NextResponse.json({ error: 'ファイルのアップロードに失敗しました' }, { status: 500 })
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 })
     }
-
-    // 公開URLの取得
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('images')
-      .getPublicUrl(`products/${fileName}`)
-
-    const imageUrl = publicUrl
 
     return NextResponse.json({ 
       success: true, 
-      imageUrl,
-      fileName 
+      imageUrl: result.imageUrl,
+      fileName,
+      storageType: getStorageType()
     })
   } catch (error) {
     console.error('Upload error:', error)
