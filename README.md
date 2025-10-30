@@ -110,19 +110,10 @@ cp env.example .env.local
 ./scripts/switch-db.sh local
 ```
 
-`.env.local`の最小設定例：
-```env
-# Database Configuration
-USE_LOCAL_DB=true
-LOCAL_DATABASE_URL="postgresql://wagashi_user:wagashi_password@postgres:5432/wagashi_simulator"
-
-# NextAuth.js
-NEXTAUTH_SECRET="your-secret-key-here-change-this-in-production"
-NEXTAUTH_URL="http://localhost:3000"
-
-# App
-NODE_ENV="development"
-```
+切り替えスクリプトが自動的に以下を行います：
+- `USE_LOCAL_DB=true` に設定
+- `DATABASE_URL` と `DIRECT_URL` をローカル用に変更
+- Supabase用のURLをコメントアウト
 
 #### Supabase使用時
 
@@ -131,14 +122,9 @@ NODE_ENV="development"
 ./scripts/switch-db.sh supabase
 ```
 
-`.env.local`にSupabaseの設定情報を追加：
+事前に`.env.local`にSupabaseの設定情報を追加しておく必要があります：
 
 ```env
-# Database Configuration
-USE_LOCAL_DB=false
-DATABASE_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
-
 # Supabase（必須）
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
@@ -149,6 +135,11 @@ SUPABASE_PROJECT_ID=your-supabase-project-id
 NEXTAUTH_SECRET="your-secret-key-here-change-this-in-production"
 NEXTAUTH_URL="http://localhost:3000"
 ```
+
+切り替えスクリプトが自動的に以下を行います：
+- `USE_LOCAL_DB=false` に設定
+- `DATABASE_URL` と `DIRECT_URL` をSupabase用に変更
+- ローカル用のURLをコメントアウト
 
 **重要**: 
 - `[YOUR-PASSWORD]`をSupabaseプロジェクト作成時に設定したデータベースパスワードに置き換え
