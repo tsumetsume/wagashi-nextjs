@@ -19,6 +19,7 @@ case $DB_TYPE in
         echo "ローカルPostgreSQLに切り替えています..."
         sed -i 's/USE_LOCAL_DB=false/USE_LOCAL_DB=true/' .env.local
         echo "✅ ローカルPostgreSQLに切り替えました"
+        echo "Lib install: docker compose -f compose.local.yml run --rm app pnpm install"
         echo "📝 compose.local.ymlを使用してください: docker compose -f compose.local.yml up"
         ;;
     "supabase")

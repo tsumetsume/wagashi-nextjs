@@ -164,6 +164,8 @@ NEXTAUTH_URL="http://localhost:3000"
 #### ローカルPostgreSQL使用時
 
 ```bash
+docker compose -f compose.local.yml run --rm app pnpm install
+
 # PostgreSQLコンテナを含む開発環境を起動
 docker compose -f compose.local.yml up -d
 
