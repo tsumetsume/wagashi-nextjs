@@ -173,48 +173,20 @@ docker compose -f compose.local.yml up
 **注意**: 環境変数の設定が完了してから実行してください。
 
 ```bash
-# 通常の開発環境を起動
+# 1. Supabase環境に切り替え
+./scripts/switch-db.sh supabase
+
+# 2. 依存関係のインストール
+docker compose run --rm app pnpm install
+
+# 3. データベースのセットアップ
+docker compose run --rm app pnpm db:local:setup
+
+# 4. 開発環境を起動
 docker compose up
-
-# または手動セットアップ
-docker compose run --rm app bash
-pnpm install
-pnpm db:generate
-pnpm db:push
-pnpm db:seed
-exit
-
-docker compose -f compose.local.yml up -d
 ```
 
-### 8. データベーススキーマの作成
-
-#### ローカルPostgreSQL使用時
-
-```bash
-docker compose run --rm app bash
-
-# ローカルデータベースのセットアップ（一括）
-pnpm db:local:setup
-
-# または個別実行
-pnpm db:generate
-USE_LOCAL_DB=true pnpm db:push
-USE_LOCAL_DB=true pnpm db:seed
-```
-
-#### Supabase使用時
-
-```bash
-docker compose run --rm app bash
-
-# Supabaseデータベースにテーブルを作成
-pnpm db:generate
-pnpm db:push
-pnpm db:seed
-```
-
-### 9. 既存データの移行（オプション）
+### 8. 既存データの移行（オプション）
 
 既存のローカルデータベースからSupabaseに移行する場合：
 
@@ -225,7 +197,7 @@ DATABASE_URL="your-supabase-database-url" \
 tsx scripts/migrate-to-supabase.ts
 ```
 
-### 10. アプリケーションにアクセス
+### 9. アプリケーションにアクセス
 
 - メインアプリ: http://localhost:3000
 - 管理画面: http://localhost:3000/admin
