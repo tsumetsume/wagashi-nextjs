@@ -47,7 +47,7 @@ case $DB_TYPE in
         fi
         
         echo "✅ ローカルPostgreSQLに切り替えました"
-        echo "ライブラリをインストール: docker compose -f compose.local.yml run --rm pnpm install"
+        echo "ライブラリをインストール: docker compose -f compose.local.yml run --rm app pnpm install"
         echo "📝 compose.local.ymlを使用してください: docker compose -f compose.local.yml up"
         ;;
     "supabase")
@@ -65,7 +65,7 @@ case $DB_TYPE in
         sed -i 's/^#DIRECT_URL="postgresql:\/\/postgres\./DIRECT_URL="postgresql:\/\/postgres\./' "$ENV_FILE"
         
         echo "✅ Supabaseに切り替えました"
-        echo "ライブラリをインストール: docker compose -f compose.local.yml run --rm pnpm install"
+        echo "ライブラリをインストール: docker compose -f compose.local.yml run --rm app pnpm install"
         echo "📝 通常のcompose.ymlを使用してください: docker compose up"
         ;;
     *)
