@@ -174,6 +174,7 @@ export default function WagashiSimulatorContent({
                 
                 <div className="flex gap-1">
                   <Button
+                    data-testid="clear-layout-button"
                     variant="outline"
                     size="sm"
                     className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2"
@@ -306,6 +307,7 @@ export default function WagashiSimulatorContent({
                     </TooltipContent>
                   </Tooltip>
                   <Button
+                    data-testid="clear-layout-button"
                     variant="outline"
                     size="sm"
                     className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"

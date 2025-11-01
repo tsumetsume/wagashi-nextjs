@@ -209,6 +209,7 @@ export default function PlacedItemComponent({
         elementRef.current = node
         drag(node)
       }}
+      data-testid="placed-item"
       className={`absolute cursor-move placed-item ${isDragging ? "opacity-50" : "opacity-100"} ${
         item.isLocked ? "cursor-not-allowed" : ""
       } ${isAnimating ? "z-30" : ""} ${isNew ? "placed-item-enter placed-item-enter-active" : ""}`}

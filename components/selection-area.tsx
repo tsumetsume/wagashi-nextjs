@@ -189,7 +189,7 @@ export default function SelectionArea({ placedItems, setPlacedItems, inventoryDa
   const totalCount = filteredSweets.length
 
   return (
-    <div className="w-full lg:w-80 bg-white p-3 sm:p-4 rounded-sm shadow-md flex flex-col h-full border border-[var(--color-indigo-light)]">
+    <div data-testid="selection-area" className="w-full lg:w-80 bg-white p-3 sm:p-4 rounded-sm shadow-md flex flex-col h-full border border-[var(--color-indigo-light)]">
       <h2 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-[var(--color-indigo)] tracking-wide flex items-center justify-between">
         <div className="flex items-center">
           <span className="inline-block w-1 h-5 sm:h-6 bg-[var(--color-indigo)] mr-2"></span>

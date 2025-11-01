@@ -1232,6 +1232,7 @@ export default function BoxArea({
             boxRef.current = node
             drop(node)
           }}
+          data-testid="box-area"
           className={`relative border-2 border-[var(--color-indigo)] bg-[var(--color-beige-dark)] ${isOver && canDrop ? "drag-over" : ""
             } rounded shadow-md max-w-full overflow-hidden`}
           style={{

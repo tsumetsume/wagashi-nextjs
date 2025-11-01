@@ -358,9 +358,31 @@ pnpm db:test                # データベース接続テスト
 ### E2Eテストの実行
 
 ```bash
+# 開発サーバーを起動
+pnpm dev
+
+# 別のターミナルでE2Eテストを実行
+pnpm test:e2e
+
+# または、Dockerを使用する場合
 docker compose up -d
 docker compose exec app pnpm test:e2e
 ```
+
+#### 利用可能なE2Eテスト
+
+- **店舗選択テスト** (`store-selection.spec.ts`)
+  - 店舗一覧の表示
+  - 店舗選択とシミュレーターへの遷移
+  - エラーハンドリング
+
+- **和菓子シミュレーターテスト** (`wagashi-simulator.spec.ts`)
+  - 和菓子のドラッグ&ドロップ配置
+  - 配置した和菓子の移動
+  - 和菓子の回転機能
+  - 和菓子の削除機能
+  - ダブルクリックによる詳細モーダル表示
+  - レイアウトのクリア機能
 
 ### プロジェクト構造
 

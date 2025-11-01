@@ -54,6 +54,7 @@ export default function ContextMenu({
     >
       <ul className="py-1">
         <li
+          data-testid="context-menu-delete"
           className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group relative"
           onClick={() => onDelete(item.id)}
         >
@@ -80,6 +81,7 @@ export default function ContextMenu({
         </li>
         {item.type === "sweet" && (
           <li
+            data-testid="context-menu-rotate"
             className="px-4 py-2 hover:bg-[var(--color-beige)] flex items-center cursor-pointer group relative"
             onClick={() => onRotate(item.id)}
           >

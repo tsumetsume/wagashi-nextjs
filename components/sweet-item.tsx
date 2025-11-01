@@ -55,6 +55,7 @@ export default function SweetItemComponent({ item }: SweetItemProps) {
         elementRef.current = node
         drag(node)
       }}
+      data-testid={`sweet-item-${item.id}`}
       className={`bg-white border border-[var(--color-indigo-light)] rounded-sm p-1.5 sm:p-2 ${
         item.inStock ? "cursor-move" : "cursor-not-allowed opacity-60"
       } ${isDragging ? "opacity-50" : "opacity-100"} hover:shadow-md transition-shadow duration-200 relative overflow-hidden group`}
