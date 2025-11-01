@@ -355,6 +355,13 @@ pnpm migrate:supabase       # Supabaseへのデータ移行
 pnpm db:test                # データベース接続テスト
 ```
 
+### E2Eテストの実行
+
+```bash
+docker compose up -d
+docker compose exec app pnpm test:e2e
+```
+
 ### プロジェクト構造
 
 ```
