@@ -127,6 +127,9 @@ test.describe("和菓子シミュレーター画面", () => {
     // シミュレーター画面に移動
     await page.goto("/simulator")
     await page.waitForLoadState("networkidle")
+    
+    // 少し待機してレンダリングを完了させる
+    await page.waitForTimeout(1000)
   })
 
   test("シミュレーター画面が正しく表示される", async ({ page }) => {
@@ -136,15 +139,16 @@ test.describe("和菓子シミュレーター画面", () => {
     // 店舗名の表示確認
     await expect(page.getByText("新宿店")).toBeVisible({ timeout: 15000 })
     
-    // ボックスエリアの表示確認
-    await expect(page.locator('[data-testid="box-area"]').first()).toBeVisible({ timeout: 15000 })
+    // 和菓子アイテムが読み込まれるまで待機（これによりAPIレスポンスが完了していることを確認）
+    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText("どら焼き")).toBeVisible({ timeout: 15000 })
     
     // 商品選択エリアの表示確認
     await expect(page.locator('[data-testid="selection-area"]')).toBeVisible({ timeout: 15000 })
     
-    // 和菓子アイテムの表示確認（タイムアウトを設定）
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText("どら焼き")).toBeVisible({ timeout: 15000 })
+    // ボックスエリアの表示確認（デスクトップレイアウトで確認）
+    const boxArea = page.locator('[data-testid="box-area"]').first()
+    await expect(boxArea).toBeVisible({ timeout: 15000 })
   })
 
   test("和菓子をドラッグ&ドロップで配置できる", async ({ page }) => {
