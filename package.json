@@ -18,7 +18,8 @@
     "dev:local": "next dev",
     "db:local:setup": "pnpm db:generate && pnpm db:push && pnpm db:seed",
     "db:local:reset": "pnpm db:push --force-reset && pnpm db:seed",
-    "storage:local:clean": "rm -rf public/uploads/products/* && echo 'ローカル画像ストレージをクリーンアップしました'"
+    "storage:local:clean": "rm -rf public/uploads/products/* && echo 'ローカル画像ストレージをクリーンアップしました'",
+    "test:e2e": "playwright test"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -86,6 +87,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/multer": "^1.4.13",
     "@types/node": "^22.18.7",
