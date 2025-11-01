@@ -362,12 +362,28 @@ pnpm db:test                # データベース接続テスト
 pnpm dev
 
 # 別のターミナルでE2Eテストを実行
+# テスト用データベースのセットアップも含む
+pnpm test:e2e:setup
+
+# または、データベースリセットなしでテストのみ実行
 pnpm test:e2e
 
-# または、Dockerを使用する場合
+# テスト用データベースのみリセット
+pnpm db:reset:test
+
+# Dockerを使用する場合
 docker compose -f compose.local.yml up -d
-docker compose -f compose.local.yml exec app pnpm test:e2e
+docker compose -f compose.local.yml exec app pnpm test:e2e:setup
 ```
+
+#### 固定IDについて
+
+E2Eテストでは、データベースリセット時にIDが変わる問題を解決するため、以下の固定IDを使用しています：
+
+- **店舗ID**: `test-store-001` (新宿店)
+- **商品ID**: `test-product-001` (桜餅), `test-product-002` (どら焼き)
+
+これにより、データベースをリセットしてもテストが安定して実行されます。
 
 #### 利用可能なE2Eテスト
 

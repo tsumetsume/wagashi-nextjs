@@ -121,9 +121,42 @@ async function main() {
     return category?.id || categories[0]?.id
   }
 
-  // 商品データの定義
+  // 商品データの定義（固定IDを使用）
   const productData = [
     {
+      id: 'test-product-001',
+      name: '桜餅',
+      category: '餅菓子',
+      price: 200,
+      size: '2x1',
+      description: '桜の葉の塩漬けで包んだ風味豊かな桜餅です。春の訪れを感じる季節限定の和菓子です。',
+      allergyInfo: '小麦,大豆',
+      calories: 180,
+      beforeImagePath: '/images/wagashi/sakuramochi_1.png',
+      afterImagePath: '/images/wagashi/sakuramochi_2.png',
+      ingredients: '白玉粉、砂糖、小豆餡、桜の葉、食紅',
+      nutritionInfo: 'エネルギー: 180kcal、たんぱく質: 3g、脂質: 2g、炭水化物: 38g',
+      shelfLife: '製造日から3日間',
+      storageMethod: '冷蔵保存'
+    },
+    {
+      id: 'test-product-002',
+      name: 'どら焼き',
+      category: '焼き菓子',
+      price: 200,
+      size: '2x2',
+      description: 'ふんわりとした生地で包まれた粒あんが絶妙な味わいのどら焼きです。朝夕のおやつにぴったりです。',
+      allergyInfo: '小麦,卵',
+      calories: 210,
+      beforeImagePath: '/images/wagashi/dorayaki_1.png',
+      afterImagePath: '/images/wagashi/dorayaki_2.png',
+      ingredients: '小麦粉、砂糖、卵、牛乳、小豆餡、ベーキングパウダー',
+      nutritionInfo: 'エネルギー: 210kcal、たんぱく質: 6g、脂質: 5g、炭水化物: 40g',
+      shelfLife: '製造日から3日間',
+      storageMethod: '常温保存'
+    },
+    {
+      id: 'test-product-003',
       name: '栗饅頭',
       category: '焼き菓子',
       price: 250,
@@ -139,6 +172,7 @@ async function main() {
       storageMethod: '常温保存'
     },
     {
+      id: 'test-product-004',
       name: '最中',
       category: '焼き菓子',
       price: 180,
@@ -275,22 +309,28 @@ async function main() {
     }
   ]
 
-  // 商品を作成
+  // 商品を作成（固定IDを使用）
   for (const product of productData) {
     try {
-      // 既存の商品をチェック
-      const existingProduct = await prisma.product.findFirst({
-        where: { name: product.name }
-      })
-      
-      if (existingProduct) {
-        console.log(`ℹ️ 商品「${product.name}」は既に存在します`)
-        products.push(existingProduct)
-        continue
-      }
-
-      const createdProduct = await prisma.product.create({
-        data: {
+      const createdProduct = await prisma.product.upsert({
+        where: { id: product.id },
+        update: {
+          name: product.name,
+          price: product.price,
+          categoryId: getCategoryId(product.category),
+          description: product.description,
+          allergyInfo: product.allergyInfo,
+          calories: product.calories,
+          size: product.size,
+          beforeImagePath: product.beforeImagePath,
+          afterImagePath: product.afterImagePath,
+          ingredients: product.ingredients,
+          nutritionInfo: product.nutritionInfo,
+          shelfLife: product.shelfLife,
+          storageMethod: product.storageMethod
+        },
+        create: {
+          id: product.id,
           name: product.name,
           price: product.price,
           categoryId: getCategoryId(product.category),
@@ -307,7 +347,7 @@ async function main() {
         }
       })
       products.push(createdProduct)
-      console.log(`✅ 商品を作成しました: ${product.name}`)
+      console.log(`✅ 商品を作成/更新しました: ${product.name} (ID: ${product.id})`)
     } catch (error) {
       console.log(`❌ 商品「${product.name}」の作成に失敗しました:`, error)
     }
@@ -321,18 +361,14 @@ async function main() {
   const stores = []
   const storeData = [
     {
-      name: '本店',
-      description: 'メインの店舗です',
-      address: '東京都渋谷区神宮前1-1-1',
-      phone: '03-1234-5678'
-    },
-    {
+      id: 'test-store-001',
       name: '新宿店',
       description: '新宿駅近くの便利な立地',
       address: '東京都新宿区新宿3-1-1',
       phone: '03-2345-6789'
     },
     {
+      id: 'test-store-002',
       name: '銀座店',
       description: '高級感あふれる銀座の店舗',
       address: '東京都中央区銀座4-1-1',
@@ -343,9 +379,16 @@ async function main() {
   for (const store of storeData) {
     try {
       const createdStore = await prisma.store.upsert({
-        where: { name: store.name },
-        update: {},
+        where: { id: store.id },
+        update: {
+          name: store.name,
+          description: store.description,
+          address: store.address,
+          phone: store.phone,
+          isActive: true
+        },
         create: {
+          id: store.id,
           name: store.name,
           description: store.description,
           address: store.address,
@@ -354,13 +397,9 @@ async function main() {
         }
       })
       stores.push(createdStore)
-      console.log(`✅ 店舗を作成しました: ${store.name}`)
+      console.log(`✅ 店舗を作成/更新しました: ${store.name} (ID: ${store.id})`)
     } catch (error) {
-      console.log(`ℹ️ 店舗「${store.name}」は既に存在します`)
-      const existingStore = await prisma.store.findUnique({
-        where: { name: store.name }
-      })
-      if (existingStore) stores.push(existingStore)
+      console.log(`❌ 店舗「${store.name}」の作成に失敗しました:`, error)
     }
   }
 

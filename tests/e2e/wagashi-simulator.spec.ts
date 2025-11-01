@@ -2,11 +2,11 @@ import { test, expect } from "@playwright/test"
 
 // テスト用のフィクスチャデータ
 const storeFixture = {
-  id: "store-1",
-  name: "銀座本店",
-  description: "老舗の和菓子店",
-  address: "東京都中央区銀座1-1-1",
-  phone: "03-1234-5678",
+  id: "test-store-001",
+  name: "新宿店",
+  description: "新宿駅近くの便利な立地",
+  address: "東京都新宿区新宿3-1-1",
+  phone: "03-2345-6789",
   isActive: true,
 }
 
@@ -23,40 +23,42 @@ const boxTypesFixture = [
 
 const sweetsFixture = [
   {
-    id: "sweet-1",
+    id: "test-product-001",
     name: "桜餅",
-    price: 200,
+    category: "餅菓子",
     width: 2,
-    height: 2,
-    imageUrl: "/images/sakura-mochi.jpg",
-    categoryId: "cat-1",
-    category: { name: "季節の和菓子" },
-    description: "春の代表的な和菓子",
-    ingredients: "もち米、あんこ、桜の葉",
-    allergens: "小麦",
-    calories: 150,
-    shelfLife: "当日中",
-    storageMethod: "常温保存",
-    nutritionInfo: "糖質25g",
+    height: 1,
+    price: 200,
+    imageUrl: "/images/wagashi/sakuramochi_1.png",
+    placedImageUrl: "/images/wagashi/sakuramochi_2.png",
+    allergies: ["小麦", "大豆"],
+    calories: 180,
+    description: "桜の葉の塩漬けで包んだ風味豊かな桜餅です。春の訪れを感じる季節限定の和菓子です。",
     inStock: true,
+    stockQuantity: 32,
+    ingredients: "白玉粉、砂糖、小豆餡、桜の葉、食紅",
+    nutritionInfo: "エネルギー: 180kcal、たんぱく質: 3g、脂質: 2g、炭水化物: 38g",
+    shelfLife: "製造日から3日間",
+    storageMethod: "冷蔵保存",
   },
   {
-    id: "sweet-2",
+    id: "test-product-002",
     name: "どら焼き",
-    price: 180,
-    width: 3,
-    height: 3,
-    imageUrl: "/images/dorayaki.jpg",
-    categoryId: "cat-2",
-    category: { name: "定番和菓子" },
-    description: "ふわふわの生地にあんこを挟んだ和菓子",
-    ingredients: "小麦粉、卵、あんこ",
-    allergens: "小麦、卵",
-    calories: 220,
-    shelfLife: "3日間",
-    storageMethod: "常温保存",
-    nutritionInfo: "糖質30g",
+    category: "焼き菓子",
+    width: 2,
+    height: 2,
+    price: 200,
+    imageUrl: "/images/wagashi/dorayaki_1.png",
+    placedImageUrl: "/images/wagashi/dorayaki_2.png",
+    allergies: ["小麦", "卵"],
+    calories: 210,
+    description: "ふんわりとした生地で包まれた粒あんが絶妙な味わいのどら焼きです。朝夕のおやつにぴったりです。",
     inStock: true,
+    stockQuantity: 25,
+    ingredients: "小麦粉、砂糖、卵、牛乳、小豆餡、ベーキングパウダー",
+    nutritionInfo: "エネルギー: 210kcal、たんぱく質: 6g、脂質: 5g、炭水化物: 40g",
+    shelfLife: "製造日から3日間",
+    storageMethod: "常温保存",
   },
 ]
 
@@ -72,7 +74,7 @@ const maintenanceSettingsFixture = {
 test.describe("和菓子シミュレーター画面", () => {
   test.beforeEach(async ({ page }) => {
     // 必要なAPIレスポンスをモック
-    await page.route("**/api/stores/store-1", async (route) => {
+    await page.route("**/api/stores/test-store-001", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -90,7 +92,7 @@ test.describe("和菓子シミュレーター画面", () => {
 
     await page.route("**/api/sweets**", async (route) => {
       const url = new URL(route.request().url())
-      if (url.searchParams.get('storeId') === 'store-1') {
+      if (url.searchParams.get('storeId') === 'test-store-001') {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -117,9 +119,9 @@ test.describe("和菓子シミュレーター画面", () => {
       })
     })
 
-    // ローカルストレージに店舗IDを設定
+    // ローカルストレージに固定の店舗IDを設定
     await page.addInitScript(() => {
-      localStorage.setItem("selectedStoreId", "store-1")
+      localStorage.setItem("selectedStoreId", "test-store-001")
     })
 
     // シミュレーター画面に移動
@@ -132,7 +134,7 @@ test.describe("和菓子シミュレーター画面", () => {
     await expect(page.getByRole("heading", { name: "和菓子詰め合わせシミュレーター" })).toBeVisible({ timeout: 15000 })
     
     // 店舗名の表示確認
-    await expect(page.getByText("銀座本店")).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText("新宿店")).toBeVisible({ timeout: 15000 })
     
     // ボックスエリアの表示確認
     await expect(page.locator('[data-testid="box-area"]').first()).toBeVisible({ timeout: 15000 })
@@ -150,7 +152,7 @@ test.describe("和菓子シミュレーター画面", () => {
     await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
     
     // 桜餅が表示されるまで待機
-    const sakuraMochi = page.locator('[data-testid="sweet-item-sweet-1"]')
+    const sakuraMochi = page.locator('[data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
     const boxArea = page.locator('[data-testid="box-area"]').first()
@@ -165,7 +167,7 @@ test.describe("和菓子シミュレーター画面", () => {
     await expect(page.locator('[data-testid="placed-item"]').first()).toBeVisible({ timeout: 15000 })
     
     // どら焼きも配置
-    const dorayaki = page.locator('[data-testid="sweet-item-sweet-2"]')
+    const dorayaki = page.locator('[data-testid="sweet-item-test-product-002"]')
     await expect(dorayaki).toBeVisible({ timeout: 15000 })
     
     await dorayaki.hover()
@@ -182,7 +184,7 @@ test.describe("和菓子シミュレーター画面", () => {
     await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
     
     // まず和菓子を配置
-    const sakuraMochi = page.locator('[data-testid="sweet-item-sweet-1"]')
+    const sakuraMochi = page.locator('[data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
     const boxArea = page.locator('[data-testid="box-area"]').first()
@@ -307,7 +309,7 @@ test.describe("和菓子シミュレーター画面", () => {
     await page.mouse.up()
     
     // どら焼きを配置
-    const dorayaki = page.locator('[data-testid="sweet-item-sweet-2"]')
+    const dorayaki = page.locator('[data-testid="sweet-item-test-product-002"]')
     await expect(dorayaki).toBeVisible({ timeout: 15000 })
     
     await dorayaki.hover()
@@ -350,7 +352,7 @@ test.describe("和菓子シミュレーター画面", () => {
     await boxArea.hover({ position: { x: 100, y: 100 } })
     await page.mouse.up()
     
-    const dorayaki = page.locator('[data-testid="sweet-item-sweet-2"]')
+    const dorayaki = page.locator('[data-testid="sweet-item-test-product-002"]')
     await expect(dorayaki).toBeVisible({ timeout: 15000 })
     
     await dorayaki.hover()

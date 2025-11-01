@@ -19,7 +19,9 @@
     "db:local:setup": "pnpm db:generate && pnpm db:push && pnpm db:seed",
     "db:local:reset": "pnpm db:push --force-reset && pnpm db:seed",
     "storage:local:clean": "rm -rf public/uploads/products/* && echo 'ローカル画像ストレージをクリーンアップしました'",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:setup": "./scripts/reset-test-db.sh && playwright test",
+    "db:reset:test": "./scripts/reset-test-db.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
