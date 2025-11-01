@@ -7,8 +7,9 @@ COPY ./prisma ./prisma
 RUN npm install -g pnpm && pnpm install
 
 COPY . .
-RUN pnpm build && CI=true pnpm prune --prod
+RUN pnpm build
 RUN pnpm exec playwright install --with-deps
+RUN CI=true pnpm prune --prod
 
 # ENTRYPOINT ["/app/setup.sh"]
 
