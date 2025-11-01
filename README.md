@@ -32,7 +32,7 @@
 
 ```bash
 git clone <repository-url>
-cd wagashi
+cd wagashi-nextjs
 ```
 
 ### 2. データベース環境の選択
@@ -269,7 +269,7 @@ Error: supabaseUrl is required.
 
 これはSupabaseの環境変数が設定されていないことが原因です。以下の手順で解決してください：
 
-1. **環境変数の確認**: `.env`ファイルにSupabaseの設定がすべて記載されているか確認
+1. **環境変数の確認**: `.env.local`ファイルにSupabaseの設定がすべて記載されているか確認
 2. **値の設定**: 空の値（`""`）ではなく、実際のSupabaseプロジェクトの値を設定
 3. **再ビルド**: 環境変数を設定後、`docker compose up --build`を再実行
 
@@ -358,26 +358,25 @@ pnpm db:test                # データベース接続テスト
 ### プロジェクト構造
 
 ```
-wagashi-simulator/
+wagashi-nextjs/
 ├── app/                    # Next.js App Router
-│   ├── admin/             # 管理画面
-│   │   ├── login/         # ログインページ
-│   │   ├── categories/    # カテゴリー管理
-│   │   ├── products/      # 商品管理
-│   │   ├── stock/         # 在庫管理
-│   │   └── accounts/      # アカウント管理
-│   └── api/               # API Routes
-│       └── admin/         # 管理画面API
-├── components/            # Reactコンポーネント
-│   ├── admin/            # 管理画面用コンポーネント
-│   └── ui/               # UIコンポーネント
-├── lib/                  # ユーティリティ
-├── prisma/               # Prisma設定
-│   ├── schema.prisma     # データベーススキーマ
-│   └── seed.ts           # シードデータ
-├── lib/                  # ユーティリティ
-│   └── supabase.ts       # Supabaseクライアント設定
-└── public/               # 静的ファイル
+│   ├── admin/              # 管理画面
+│   │   ├── login/          # ログインページ
+│   │   ├── categories/     # カテゴリー管理
+│   │   ├── products/       # 商品管理
+│   │   ├── stock/          # 在庫管理
+│   │   └── accounts/       # アカウント管理
+│   └── api/                # API Routes
+│       └── admin/          # 管理画面API
+├── components/             # Reactコンポーネント
+│   ├── admin/              # 管理画面用コンポーネント
+│   └── ui/                 # UIコンポーネント
+├── lib/                    # ユーティリティ
+├── prisma/                 # Prisma設定
+│   ├── schema.prisma       # データベーススキーマ
+│   └── seed.ts             # シードデータ
+├── public/                 # 静的ファイル
+└── scripts/                # 各種スクリプト
 ```
 
 ## データベーススキーマ
@@ -422,11 +421,11 @@ pnpm types:generate
 このエラーはビルド時にSupabaseの環境変数が設定されていない場合に発生します。
 
 **解決方法**:
-1. `.env`ファイルが存在し、すべてのSupabase環境変数が設定されていることを確認
+1. `.env.local`ファイルが存在し、すべてのSupabase環境変数が設定されていることを確認
 2. 環境変数の値が空文字列（`""`）ではなく、実際の値が設定されていることを確認
 3. 以下のコマンドで環境変数を確認：
    ```bash
-   cat .env | grep SUPABASE
+   cat .env.local | grep SUPABASE
    ```
 4. 環境変数を正しく設定後、コンテナを再ビルド：
    ```bash
@@ -461,7 +460,7 @@ pnpm types:generate
 
 1. **環境変数の確認**
    ```bash
-   # .envファイルでSupabase設定を確認
+   # .env.localファイルでSupabase設定を確認
    NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
@@ -500,7 +499,7 @@ pnpm add @supabase/supabase-js
    - 可能であればネットワーク管理者に依頼し、以下の外向き通信を許可:
      - 5432/tcp（ダイレクト接続）
      - 6543/tcp（接続プール PgBouncer/Supavisor 経由・推奨）
-   - 接続先ホストは `.env` の `DATABASE_URL`/`DIRECT_URL` に記載の Supabase ホスト（例: `aws-0-ap-northeast-1.pooler.supabase.com`）。
+   - 接続先ホストは `.env.local` の `DATABASE_URL`/`DIRECT_URL` に記載の Supabase ホスト（例: `aws-0-ap-northeast-1.pooler.supabase.com`）。
 
 2. **疎通確認（タイムアウト切り分け）**
    - ネットワーク越しに TLS で握手できるか確認:
@@ -514,7 +513,7 @@ pnpm add @supabase/supabase-js
 
 3. **接続文字列のSSL/プール設定を有効化（重要）**
    - 企業ネットワークでは SSL 必須のことが多いため、`sslmode=require` を付け、アプリ処理はプール経由を使用してください。
-   - `.env` の最小例（置換必須）:
+   - `.env.local` の最小例（置換必須）:
      ```env
      # アプリ処理用（プール経由）
      DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require"
@@ -592,7 +591,7 @@ openssl s_client -connect aws-0-ap-northeast-1.pooler.supabase.com:5432 -brief <
 
 #### Prisma/接続文字列の注意
 - IP 制限により接続可否が決まるだけで、接続文字列の形式自体は変わりません。引き続き `sslmode=require` を強く推奨します。
-- `.env` 例:
+- `.env.local` 例:
   ```env
   DATABASE_URL="postgresql://...:6543/postgres?pgbouncer=true&sslmode=require"
   DIRECT_URL="postgresql://...:5432/postgres?sslmode=require"
