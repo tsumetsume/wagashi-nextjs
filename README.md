@@ -365,8 +365,8 @@ pnpm dev
 pnpm test:e2e
 
 # または、Dockerを使用する場合
-docker compose up -d
-docker compose exec app pnpm test:e2e
+docker compose -f compose.local.yml up -d
+docker compose -f compose.local.yml exec app pnpm test:e2e
 ```
 
 #### 利用可能なE2Eテスト
