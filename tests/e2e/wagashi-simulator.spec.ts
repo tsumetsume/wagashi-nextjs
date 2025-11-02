@@ -470,7 +470,9 @@ test.describe("和菓子シミュレーター画面", () => {
     
     // 初期の合計金額を取得（箱代のみ）
     const initialTotalText = await totalPriceElement.textContent()
+    console.log('Initial total text:', initialTotalText)
     const initialTotal = parseInt(initialTotalText?.match(/\d+/)?.[0] || '0')
+    console.log('Initial total:', initialTotal)
     
     // 箱サイズ変更ボタンをクリック
     const boxSizeButton = page.locator('[data-testid="box-size-selector"]:visible')
@@ -485,18 +487,33 @@ test.describe("和菓子シミュレーター画面", () => {
     const mediumBoxOption = page.locator('[data-testid="box-option-15x15"]')
     if (await mediumBoxOption.isVisible()) {
       await mediumBoxOption.click()
+      // カードクリック後の状態更新を待機
+      await page.waitForTimeout(500)
     } else {
       // 中箱がない場合は利用可能な別のサイズを選択
       const availableBoxOption = page.locator('[data-testid^="box-option-"]:not([data-testid="box-option-10x10"])').first()
       await availableBoxOption.click()
+      // カードクリック後の状態更新を待機
+      await page.waitForTimeout(500)
     }
+    
+    // 選択ボタンが有効になるまで待機してクリック
+    const selectButton = page.getByRole("button", { name: "選択" })
+    await expect(selectButton).toBeVisible({ timeout: 10000 })
+    await expect(selectButton).toBeEnabled({ timeout: 5000 })
+    await selectButton.click()
     
     // モーダルが閉じるまで待機
     await expect(boxSelectionModal).not.toBeVisible({ timeout: 15000 })
     
+    // 箱サイズ変更の処理が完了するまで待機
+    await page.waitForTimeout(1000)
+    
     // 箱サイズ変更後の合計金額を確認
     const newTotalText = await totalPriceElement.textContent()
+    console.log('New total text:', newTotalText)
     const newTotal = parseInt(newTotalText?.match(/\d+/)?.[0] || '0')
+    console.log('New total:', newTotal)
     
     // 箱代が変わったことを確認（異なる金額になっている）
     expect(newTotal).not.toBe(initialTotal)
