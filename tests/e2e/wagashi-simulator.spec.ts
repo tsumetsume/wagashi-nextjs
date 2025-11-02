@@ -334,15 +334,18 @@ test.describe("和菓子シミュレーター画面", () => {
     const placedItem = page.locator('[data-testid="placed-item"]:visible')
     await placedItem.dblclick()
     
+    // モーダルの表示を待機
+    await page.waitForTimeout(500)
+    
     // 詳細モーダルが表示されることを確認
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 15000 })
-    // モーダル内の桜餅テキストを確認（より具体的なセレクター）
-    await expect(page.getByRole("dialog").getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText("春の代表的な和菓子")).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText("200円")).toBeVisible({ timeout: 15000 })
+    // モーダルのタイトル（見出し）として桜餅が表示されることを確認
+    await expect(page.getByRole("dialog").getByRole("heading", { name: "桜餅" })).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole("dialog").getByText("春の代表的な和菓子")).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole("dialog").getByText("200円")).toBeVisible({ timeout: 15000 })
     
-    // モーダルを閉じる
-    await page.getByRole("button", { name: "閉じる" }).click()
+    // モーダルを閉じる（Escキーまたは×ボタンで閉じる）
+    await page.keyboard.press('Escape')
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 15000 })
   })
 
@@ -390,6 +393,9 @@ test.describe("和菓子シミュレーター画面", () => {
     // 残ったアイテムをダブルクリックして詳細表示
     const remainingItem = page.locator('[data-testid="placed-item"]:visible')
     await remainingItem.dblclick()
+    
+    // モーダルの表示を待機
+    await page.waitForTimeout(500)
     
     // 詳細モーダルが表示されることを確認
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 15000 })
