@@ -15,8 +15,24 @@ const boxTypesFixture = [
     id: "box-1",
     size: "10x10",
     name: "小箱",
-    price: 1000,
-    description: "ベーシックなサイズ",
+    price: 300,
+    description: "少量の和菓子に最適な小さな箱です",
+    isActive: true,
+  },
+  {
+    id: "box-2",
+    size: "15x15",
+    name: "中箱",
+    price: 500,
+    description: "中程度の量の和菓子に適した箱です",
+    isActive: true,
+  },
+  {
+    id: "box-3",
+    size: "20x20",
+    name: "大箱",
+    price: 800,
+    description: "たくさんの和菓子を詰め合わせできる大きな箱です",
     isActive: true,
   },
 ]
@@ -445,5 +461,119 @@ test.describe("和菓子シミュレーター画面", () => {
     
     // すべてのアイテムがクリアされたことを確認
     await expect(page.locator('[data-testid="placed-item"]:visible')).toHaveCount(0)
+  })
+
+  test("箱のサイズを変更すると、レイアウトが変わり、合計金額が変わること", async ({ page }) => {
+    // 初期の箱サイズと金額を確認
+    const totalPriceElement = page.locator('[data-testid="total-price"]:visible')
+    await expect(totalPriceElement).toBeVisible({ timeout: 15000 })
+    
+    // 初期の合計金額を取得（箱代のみ）
+    const initialTotalText = await totalPriceElement.textContent()
+    const initialTotal = parseInt(initialTotalText?.match(/\d+/)?.[0] || '0')
+    
+    // 箱サイズ変更ボタンをクリック
+    const boxSizeButton = page.locator('[data-testid="box-size-selector"]:visible')
+    await expect(boxSizeButton).toBeVisible({ timeout: 15000 })
+    await boxSizeButton.click()
+    
+    // 箱サイズ選択モーダルが表示されることを確認
+    const boxSelectionModal = page.getByRole("dialog")
+    await expect(boxSelectionModal).toBeVisible({ timeout: 15000 })
+    
+    // 異なるサイズの箱を選択（中箱または大箱）
+    const mediumBoxOption = page.locator('[data-testid="box-option-15x15"]')
+    if (await mediumBoxOption.isVisible()) {
+      await mediumBoxOption.click()
+    } else {
+      // 中箱がない場合は利用可能な別のサイズを選択
+      const availableBoxOption = page.locator('[data-testid^="box-option-"]:not([data-testid="box-option-10x10"])').first()
+      await availableBoxOption.click()
+    }
+    
+    // モーダルが閉じるまで待機
+    await expect(boxSelectionModal).not.toBeVisible({ timeout: 15000 })
+    
+    // 箱サイズ変更後の合計金額を確認
+    const newTotalText = await totalPriceElement.textContent()
+    const newTotal = parseInt(newTotalText?.match(/\d+/)?.[0] || '0')
+    
+    // 箱代が変わったことを確認（異なる金額になっている）
+    expect(newTotal).not.toBe(initialTotal)
+    
+    // 箱エリアのサイズが変わったことを確認
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
+    await expect(boxArea).toBeVisible({ timeout: 15000 })
+  })
+
+  test("商品を配置すると、合計金額が変わること", async ({ page }) => {
+    // 初期の合計金額を取得（箱代のみ）
+    const totalPriceElement = page.locator('[data-testid="total-price"]:visible')
+    await expect(totalPriceElement).toBeVisible({ timeout: 15000 })
+    
+    const initialTotalText = await totalPriceElement.textContent()
+    const initialTotal = parseInt(initialTotalText?.match(/\d+/)?.[0] || '0')
+    
+    // 桜餅を配置
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
+    await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
+    
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
+    
+    await sakuraMochi.hover()
+    await page.mouse.down()
+    await boxArea.hover({ position: { x: 100, y: 100 } })
+    await page.mouse.up()
+    
+    // ドラッグ&ドロップ完了後の処理を待機
+    await page.waitForTimeout(1000)
+    
+    // 配置されたアイテムが表示されることを確認
+    await expect(page.locator('[data-testid="placed-item"]:visible')).toBeVisible({ timeout: 15000 })
+    
+    // 桜餅配置後の合計金額を確認
+    const afterSakuraText = await totalPriceElement.textContent()
+    const afterSakuraTotal = parseInt(afterSakuraText?.match(/\d+/)?.[0] || '0')
+    
+    // 桜餅の価格（200円）が追加されたことを確認
+    expect(afterSakuraTotal).toBe(initialTotal + 200)
+    
+    // どら焼きも配置
+    const dorayaki = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-002"]')
+    
+    // どら焼きが見えない場合は焼き菓子タブをクリック
+    if (!(await dorayaki.isVisible())) {
+      await page.getByRole('tab', { name: '焼き菓子' }).click()
+      await page.waitForTimeout(500)
+    }
+    
+    await expect(dorayaki).toBeVisible({ timeout: 15000 })
+    
+    await dorayaki.hover()
+    await page.mouse.down()
+    await boxArea.hover({ position: { x: 200, y: 200 } })
+    await page.mouse.up()
+    
+    // ドラッグ&ドロップ完了後の処理を待機
+    await page.waitForTimeout(1000)
+    
+    // どら焼き配置後の合計金額を確認
+    const finalTotalText = await totalPriceElement.textContent()
+    const finalTotal = parseInt(finalTotalText?.match(/\d+/)?.[0] || '0')
+    
+    // どら焼きの価格（200円）も追加されたことを確認
+    expect(finalTotal).toBe(initialTotal + 200 + 200) // 箱代 + 桜餅 + どら焼き
+    
+    // 配置されたアイテムを削除して金額が減ることを確認
+    const firstPlacedItem = page.locator('[data-testid="placed-item"]:visible').first()
+    await firstPlacedItem.click({ button: "right" })
+    await page.locator('[data-testid="context-menu-delete"]').click()
+    
+    // 削除後の合計金額を確認
+    const afterDeleteText = await totalPriceElement.textContent()
+    const afterDeleteTotal = parseInt(afterDeleteText?.match(/\d+/)?.[0] || '0')
+    
+    // 1つの商品が削除されて金額が減ったことを確認
+    expect(afterDeleteTotal).toBe(finalTotal - 200)
   })
 })

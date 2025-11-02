@@ -122,6 +122,7 @@ export default function BoxSelectionModal({
               {boxTypes.map((boxType) => (
                 <Card
                   key={boxType.id}
+                  data-testid={`box-option-${boxType.size}`}
                   className={`cursor-pointer transition-all hover:shadow-md ${
                     selectedBoxType?.id === boxType.id
                       ? "ring-2 ring-blue-500 bg-blue-50"

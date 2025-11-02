@@ -153,6 +153,7 @@ export default function WagashiSimulatorContent({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
+                      data-testid="box-size-selector"
                       variant="outline"
                       size="sm"
                       className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2 relative"
@@ -288,6 +289,7 @@ export default function WagashiSimulatorContent({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
+                        data-testid="box-size-selector"
                         variant="outline"
                         size="sm"
                         className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white relative"
@@ -437,7 +439,7 @@ export default function WagashiSimulatorContent({
                 </div>
                 <div className="border-t pt-2 flex justify-between">
                   <span className="text-lg font-medium text-[var(--color-indigo)]">合計:</span>
-                  <span className="text-xl font-bold text-[var(--color-indigo)]">
+                  <span className="text-xl font-bold text-[var(--color-indigo)]" data-testid="total-price">
                     {calculateTotalPrice().toLocaleString()}円
                   </span>
                 </div>
@@ -500,7 +502,7 @@ export default function WagashiSimulatorContent({
                   </div>
                   <div className="border-t pt-2 flex justify-between">
                     <span className="text-lg font-medium text-[var(--color-indigo)]">合計:</span>
-                    <span className="text-xl font-bold text-[var(--color-indigo)]">
+                    <span className="text-xl font-bold text-[var(--color-indigo)]" data-testid="total-price">
                       {calculateTotalPrice().toLocaleString()}円
                     </span>
                   </div>
