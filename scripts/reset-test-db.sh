@@ -3,11 +3,18 @@
 # テスト用データベースリセットスクリプト
 echo "🔄 テスト用データベースをリセットしています..."
 
-# データベースをリセット
-docker compose -f compose.local.yml run app pnpm db:push --force-reset
-
-# 固定IDでシードデータを投入
-docker compose -f compose.local.yml run app pnpm db:seed
+# Docker内で実行されているかチェック
+if [ -f /.dockerenv ]; then
+    echo "📦 Docker環境で実行中..."
+    # Docker内では直接コマンドを実行
+    pnpm db:push --force-reset
+    pnpm db:seed
+else
+    echo "🖥️  ローカル環境で実行中..."
+    # ローカル環境ではDocker Composeを使用
+    docker compose -f compose.local.yml run app pnpm db:push --force-reset
+    docker compose -f compose.local.yml run app pnpm db:seed
+fi
 
 echo "✅ テスト用データベースのリセットが完了しました"
 echo "📋 固定ID情報:"

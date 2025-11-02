@@ -11,7 +11,7 @@ export default defineConfig({
     headless: true,
     trace: "on-first-retry",
     video: "on-first-retry",
-    viewport: { width: 1440, height: 900 },
+    viewport: { width: 1920, height: 1080 },
     // Docker環境での安定性のための設定
     actionTimeout: 10_000,
     navigationTimeout: 30_000,
@@ -21,7 +21,7 @@ export default defineConfig({
       name: "chromium",
       use: { 
         ...devices["Desktop Chrome"],
-        viewport: { width: 1440, height: 900 },
+        viewport: { width: 1920, height: 1080 },
         // Docker環境でのChrome設定
         launchOptions: {
           args: [

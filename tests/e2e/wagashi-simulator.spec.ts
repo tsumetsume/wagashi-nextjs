@@ -133,7 +133,28 @@ test.describe("和菓子シミュレーター画面", () => {
     await page.goto("/simulator")
     await page.waitForLoadState("networkidle")
     
-    // 少し待機してレンダリングを完了させる
+    // レンダリングとレスポンシブレイアウトの完了を待機
+    await page.waitForTimeout(2000)
+    
+    // ページが完全に読み込まれるまで待機
+    await page.waitForLoadState('domcontentloaded')
+    await page.waitForLoadState('networkidle')
+    
+    // 餅菓子タブが選択されていることを確認（桜餅が餅菓子カテゴリのため）
+    const mochiTab = page.getByRole('tab', { name: '餅菓子' })
+    if (await mochiTab.isVisible()) {
+      await mochiTab.click()
+      await page.waitForTimeout(1500) // タブ切り替えの待機時間をさらに長めに設定
+    } else {
+      // 餅菓子タブが見つからない場合は、利用可能な最初のタブをクリック
+      const firstTab = page.locator('[role="tab"]').first()
+      if (await firstTab.isVisible()) {
+        await firstTab.click()
+        await page.waitForTimeout(1500)
+      }
+    }
+    
+    // レスポンシブレイアウトの調整完了を待機
     await page.waitForTimeout(1000)
   })
 
@@ -144,27 +165,43 @@ test.describe("和菓子シミュレーター画面", () => {
     // 店舗名の表示確認
     await expect(page.getByText("新宿店")).toBeVisible({ timeout: 15000 })
     
-    // 和菓子アイテムが読み込まれるまで待機（これによりAPIレスポンスが完了していることを確認）
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText("どら焼き")).toBeVisible({ timeout: 15000 })
+    // 和菓子アイテムが読み込まれるまで待機
+    // 桜餅（餅菓子カテゴリ）の確認
+    await expect(page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')).toBeVisible({ timeout: 15000 })
     
-    // 商品選択エリアの表示確認
-    await expect(page.locator('[data-testid="selection-area"]')).toBeVisible({ timeout: 15000 })
+    // どら焼き（焼き菓子カテゴリ）の確認のため、焼き菓子タブに切り替え
+    const yakigashiTab = page.getByRole('tab', { name: '焼き菓子' })
+    if (await yakigashiTab.isVisible()) {
+      await yakigashiTab.click()
+      await page.waitForTimeout(500)
+      await expect(page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-002"]')).toBeVisible({ timeout: 15000 })
+      
+      // 餅菓子タブに戻す
+      const mochiTab = page.getByRole('tab', { name: '餅菓子' })
+      if (await mochiTab.isVisible()) {
+        await mochiTab.click()
+        await page.waitForTimeout(500)
+      }
+    } else {
+      // 焼き菓子タブが見つからない場合は、どら焼きが現在のタブにあるかチェック
+      await expect(page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-002"]')).toBeVisible({ timeout: 15000 })
+    }
     
-    // ボックスエリアの表示確認（デスクトップレイアウトで確認）
-    const boxArea = page.locator('[data-testid="box-area"]').first()
-    await expect(boxArea).toBeVisible({ timeout: 15000 })
+    // 実際に表示されている商品選択エリアを確認
+    const visibleSelectionArea = page.locator('[data-testid="selection-area"]:visible')
+    await expect(visibleSelectionArea).toBeVisible({ timeout: 15000 })
+    
+    // 実際に表示されているボックスエリアを確認
+    const visibleBoxArea = page.locator('[data-testid="box-area"]:visible')
+    await expect(visibleBoxArea).toBeVisible({ timeout: 15000 })
   })
 
   test("和菓子をドラッグ&ドロップで配置できる", async ({ page }) => {
-    // 和菓子アイテムが表示されるまで待機
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    
-    // 桜餅が表示されるまで待機
-    const sakuraMochi = page.locator('[data-testid="sweet-item-test-product-001"]')
+    // 桜餅が表示されるまで待機（現在のタブパネル内の要素を対象）
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
-    const boxArea = page.locator('[data-testid="box-area"]').first()
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
     
     // ドラッグ&ドロップを実行
     await sakuraMochi.hover()
@@ -175,8 +212,15 @@ test.describe("和菓子シミュレーター画面", () => {
     // 配置されたアイテムが表示されることを確認
     await expect(page.locator('[data-testid="placed-item"]').first()).toBeVisible({ timeout: 15000 })
     
-    // どら焼きも配置
-    const dorayaki = page.locator('[data-testid="sweet-item-test-product-002"]')
+    // どら焼きも配置（焼き菓子タブに切り替えが必要な場合があるため、まず確認）
+    const dorayaki = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-002"]')
+    
+    // どら焼きが見えない場合は焼き菓子タブをクリック
+    if (!(await dorayaki.isVisible())) {
+      await page.getByRole('tab', { name: '焼き菓子' }).click()
+      await page.waitForTimeout(500)
+    }
+    
     await expect(dorayaki).toBeVisible({ timeout: 15000 })
     
     await dorayaki.hover()
@@ -189,14 +233,11 @@ test.describe("和菓子シミュレーター画面", () => {
   })
 
   test("配置した和菓子を移動できる", async ({ page }) => {
-    // 和菓子アイテムが表示されるまで待機
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    
     // まず和菓子を配置
-    const sakuraMochi = page.locator('[data-testid="sweet-item-test-product-001"]')
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
-    const boxArea = page.locator('[data-testid="box-area"]').first()
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
     
     await sakuraMochi.hover()
     await page.mouse.down()
@@ -218,14 +259,11 @@ test.describe("和菓子シミュレーター画面", () => {
   })
 
   test("和菓子を回転できる", async ({ page }) => {
-    // 和菓子アイテムが表示されるまで待機
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    
     // 和菓子を配置
-    const sakuraMochi = page.locator('[data-testid="sweet-item-sweet-1"]')
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
-    const boxArea = page.locator('[data-testid="box-area"]').first()
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
     
     await sakuraMochi.hover()
     await page.mouse.down()
@@ -245,14 +283,11 @@ test.describe("和菓子シミュレーター画面", () => {
   })
 
   test("和菓子を削除できる", async ({ page }) => {
-    // 和菓子アイテムが表示されるまで待機
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    
     // 和菓子を配置
-    const sakuraMochi = page.locator('[data-testid="sweet-item-sweet-1"]')
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
-    const boxArea = page.locator('[data-testid="box-area"]').first()
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
     
     await sakuraMochi.hover()
     await page.mouse.down()
@@ -272,14 +307,11 @@ test.describe("和菓子シミュレーター画面", () => {
   })
 
   test("和菓子をダブルクリックで詳細モーダルが表示される", async ({ page }) => {
-    // 和菓子アイテムが表示されるまで待機
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    
     // 和菓子を配置
-    const sakuraMochi = page.locator('[data-testid="sweet-item-sweet-1"]')
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
-    const boxArea = page.locator('[data-testid="box-area"]').first()
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
     
     await sakuraMochi.hover()
     await page.mouse.down()
@@ -292,7 +324,8 @@ test.describe("和菓子シミュレーター画面", () => {
     
     // 詳細モーダルが表示されることを確認
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
+    // モーダル内の桜餅テキストを確認（より具体的なセレクター）
+    await expect(page.getByRole("dialog").getByText("桜餅")).toBeVisible({ timeout: 15000 })
     await expect(page.getByText("春の代表的な和菓子")).toBeVisible({ timeout: 15000 })
     await expect(page.getByText("200円")).toBeVisible({ timeout: 15000 })
     
@@ -302,14 +335,10 @@ test.describe("和菓子シミュレーター画面", () => {
   })
 
   test("複数の和菓子を配置して操作できる", async ({ page }) => {
-    // 和菓子アイテムが表示されるまで待機
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText("どら焼き")).toBeVisible({ timeout: 15000 })
-    
-    const boxArea = page.locator('[data-testid="box-area"]').first()
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
     
     // 桜餅を配置
-    const sakuraMochi = page.locator('[data-testid="sweet-item-sweet-1"]')
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
     await sakuraMochi.hover()
@@ -317,8 +346,15 @@ test.describe("和菓子シミュレーター画面", () => {
     await boxArea.hover({ position: { x: 100, y: 100 } })
     await page.mouse.up()
     
-    // どら焼きを配置
-    const dorayaki = page.locator('[data-testid="sweet-item-test-product-002"]')
+    // どら焼きを配置（焼き菓子タブに切り替えが必要な場合があるため、まず確認）
+    const dorayaki = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-002"]')
+    
+    // どら焼きが見えない場合は焼き菓子タブをクリック
+    if (!(await dorayaki.isVisible())) {
+      await page.getByRole('tab', { name: '焼き菓子' }).click()
+      await page.waitForTimeout(500)
+    }
+    
     await expect(dorayaki).toBeVisible({ timeout: 15000 })
     
     await dorayaki.hover()
@@ -346,14 +382,10 @@ test.describe("和菓子シミュレーター画面", () => {
   })
 
   test("レイアウトをクリアできる", async ({ page }) => {
-    // 和菓子アイテムが表示されるまで待機
-    await expect(page.getByText("桜餅")).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText("どら焼き")).toBeVisible({ timeout: 15000 })
-    
-    const boxArea = page.locator('[data-testid="box-area"]').first()
+    const boxArea = page.locator('[data-testid="box-area"]:visible')
     
     // 複数の和菓子を配置
-    const sakuraMochi = page.locator('[data-testid="sweet-item-sweet-1"]')
+    const sakuraMochi = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-001"]')
     await expect(sakuraMochi).toBeVisible({ timeout: 15000 })
     
     await sakuraMochi.hover()
@@ -361,7 +393,14 @@ test.describe("和菓子シミュレーター画面", () => {
     await boxArea.hover({ position: { x: 100, y: 100 } })
     await page.mouse.up()
     
-    const dorayaki = page.locator('[data-testid="sweet-item-test-product-002"]')
+    const dorayaki = page.locator('[role="tabpanel"]:visible [data-testid="sweet-item-test-product-002"]')
+    
+    // どら焼きが見えない場合は焼き菓子タブをクリック
+    if (!(await dorayaki.isVisible())) {
+      await page.getByRole('tab', { name: '焼き菓子' }).click()
+      await page.waitForTimeout(500)
+    }
+    
     await expect(dorayaki).toBeVisible({ timeout: 15000 })
     
     await dorayaki.hover()
