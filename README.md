@@ -373,7 +373,10 @@ pnpm db:reset:test
 
 # Dockerを使用する場合
 docker compose -f compose.local.yml up -d
-docker compose -f compose.local.yml exec app pnpm test:e2e:setup
+docker compose -f compose.local.yml exec app pnpm test:e2e:docker:setup
+
+# または、専用のテストサービスを使用
+docker compose -f compose.local.yml --profile test run --rm test
 ```
 
 #### 固定IDについて

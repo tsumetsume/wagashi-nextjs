@@ -21,6 +21,8 @@
     "storage:local:clean": "rm -rf public/uploads/products/* && echo 'ローカル画像ストレージをクリーンアップしました'",
     "test:e2e": "playwright test",
     "test:e2e:setup": "./scripts/reset-test-db.sh && playwright test",
+    "test:e2e:docker": "playwright test --config=playwright.docker.config.ts",
+    "test:e2e:docker:setup": "./scripts/reset-test-db.sh && playwright test --config=playwright.docker.config.ts",
     "db:reset:test": "./scripts/reset-test-db.sh"
   },
   "prisma": {

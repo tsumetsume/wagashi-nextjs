@@ -73,6 +73,11 @@ const maintenanceSettingsFixture = {
 
 test.describe("和菓子シミュレーター画面", () => {
   test.beforeEach(async ({ page }) => {
+    // Docker環境での追加待機時間
+    if (process.env.NODE_ENV === 'test') {
+      await page.waitForTimeout(2000)
+    }
+    
     // 必要なAPIレスポンスをモック
     await page.route("**/api/stores/test-store-001", async (route) => {
       await route.fulfill({

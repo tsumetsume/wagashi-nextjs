@@ -18,6 +18,28 @@ services:
       postgres:
         condition: service_healthy
 
+  test:
+    build: .
+    environment:
+      - NODE_ENV=test
+      - USE_LOCAL_DB=true
+      - PLAYWRIGHT_BASE_URL=http://app:3000
+    env_file:
+      - .env.local
+    volumes:
+      - ./:/app
+      - ./public/uploads:/app/public/uploads
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+    command: ./scripts/test-docker.sh
+    depends_on:
+      app:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    profiles:
+      - test
+
   postgres:
     image: postgres:17
     ports:
