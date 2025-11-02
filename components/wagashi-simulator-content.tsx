@@ -13,7 +13,7 @@ import BoxSelectionModal from "@/components/box-selection-modal"
 import type { BoxSize, PlacedItem, SweetItem, BoxType } from "@/types/types"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { PlusCircle, Save, Upload, HelpCircle, Settings, Package, Cloud, Printer } from "lucide-react"
+import { PlusCircle, Save, Upload, HelpCircle, Settings, Package, Cloud, Printer, Trash2 } from "lucide-react"
 
 import { useState, useEffect } from "react"
 
@@ -174,13 +174,13 @@ export default function WagashiSimulatorContent({
                 
                 <div className="flex gap-1">
                   <Button
-                    data-testid="clear-layout-button"
+                    data-testid="clear-layout-button-desktop"
                     variant="outline"
                     size="sm"
                     className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white px-2"
                     onClick={handleClearLayout}
                   >
-                    <PlusCircle className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
@@ -313,7 +313,7 @@ export default function WagashiSimulatorContent({
                     className="bg-[var(--color-indigo-light)] hover:bg-[var(--color-indigo)] border-[var(--color-indigo-dark)] text-white"
                     onClick={handleClearLayout}
                   >
-                    <PlusCircle className="h-4 w-4 mr-1" />
+                    <Trash2 className="h-4 w-4 mr-1" />
                     新規
                   </Button>
                   <Button

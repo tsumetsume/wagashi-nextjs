@@ -432,14 +432,16 @@ test.describe("和菓子シミュレーター画面", () => {
     const finalItemsCount = await page.locator('[data-testid="placed-item"]:visible').count()
     expect(finalItemsCount).toBeGreaterThanOrEqual(2)
     
-    // クリアボタンをクリック
-    await page.locator('[data-testid="clear-layout-button"]').first().click()
-    
-    // 確認ダイアログで「OK」をクリック
+    // 確認ダイアログのハンドラーを設定
     page.on("dialog", async (dialog) => {
       expect(dialog.message()).toContain("詰め合わせをクリアしますか？")
       await dialog.accept()
     })
+    
+    // クリアボタンが表示されるまで待機してからクリック
+    const clearButton = page.locator('[data-testid="clear-layout-button"]:visible')
+    await expect(clearButton).toBeVisible({ timeout: 10000 })
+    await clearButton.click()
     
     // すべてのアイテムがクリアされたことを確認
     await expect(page.locator('[data-testid="placed-item"]:visible')).toHaveCount(0)
